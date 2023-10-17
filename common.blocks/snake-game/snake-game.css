@@ -1,0 +1,7 @@
+@import "_outline-color/snake-game_outline-color_black.css";
+@import "__canvas/snake-game__canvas.css";
+
+.snake-game {
+	display: block;
+	margin: 0 auto;
+}
