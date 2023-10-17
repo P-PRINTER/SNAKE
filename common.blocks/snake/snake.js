@@ -1,12 +1,15 @@
 import Snake from "../../lib/snake/Snake.js";
 
-function runFunc() {
+function runFunc () {
 	const snakeCanvas = document.querySelector(".snake");
 
-	let width = 150;
-	let height = 150;
+	const cellSize = 40;
 
-	const snake = new Snake(width, height);
+	let widthInCells	= 15;
+	let heightInCells	= 15;
+
+	const snake = new Snake(widthInCells, heightInCells);
+	snake.setCellSize(cellSize);
 	snake.run(snakeCanvas);
 }
 
