@@ -13,11 +13,15 @@ function runFunc () {
 	snakeGame.style.width = widthInCells * cellSize + "px";
 	snakeGame.style.height = heightInCells * cellSize + "px";
 
-	snakeCanvas(snakeGame, widthInCells, heightInCells, cellSize);
-
 	const gameContainer = {
-		ctx: undefined;
+		ctx: undefined
 	}
+
+	snakeCanvas(snakeGame, gameContainer, {
+		widthInCells: widthInCells,
+		heightInCells: heightInCells,
+		cellSize: cellSize,
+	});
 
 	setInterval( _ => nextFrame(gameContainer), refreshTime );
 }
