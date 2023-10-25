@@ -3,5 +3,6 @@
 
 .snake-game {
 	display: block;
+	position: relative;
 	margin: 0 auto;
 }
