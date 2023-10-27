@@ -19,7 +19,7 @@ function runFunc () {
 		repeatable: new Set(),
 
 		isRunning: false,
-		isBootstrapLoaded: false;
+		isBootstrapLoaded: false,
 
 		start (repeatTime) {
 			this.isRunning = true;
@@ -33,10 +33,10 @@ function runFunc () {
 
 		play () {
 			this.isRunning = true;
-		}
+		},
 		pause () {
 			this.isRunning = false;
-		}
+		},
 	};
 
 	snakeCanvas(snakeGame, gameContainer, {
@@ -46,10 +46,10 @@ function runFunc () {
 	});
 }
 
-loadBootstrap = () => {
+const loadBootstrap = () => {
 	loadFrame(this["bootstrap"]);
 }
-loadRepeatable = (repeatTime) => {
+const loadRepeatable = (repeatTime) => {
 	this.timerId = setInterval( _ => {
 		if (!this.isRunning) return;
 		if (!this.isBootstrapLoaded) return;
