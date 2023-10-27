@@ -1,10 +1,14 @@
-import "./_layer/snake-game__canvas_layer_main.js";
-import "./_layer/snake-game__canvas_layer_back.js";
+import mainLayer from "./_layer/snake-game__canvas_layer_main.js";
+import backLayer from "./_layer/snake-game__canvas_layer_back.js";
 
 
-export default function snakeCanvas (gameArea, widthInCells = 15, heightInCells = 15, cellSize = 10) {
+export default function snakeCanvas (gameArea, container, {
+	widthInCells = 15,
+	heightInCells = 15,
+	cellSize = 10,
+}) {
 
-	const canvases = gameArea.querySelectorAll(".snake-game__canvas");
+	const canvas = gameArea.querySelectorAll(".snake-game__canvas");
 
 	for (let canvas of canvases) {
 
@@ -16,5 +20,18 @@ export default function snakeCanvas (gameArea, widthInCells = 15, heightInCells 
 
 		const ctx = canvas.getContext("2d");
 		ctx.fillRect(width / 4, height / 4, width / 2, height / 2);
+	}
+}
+
+class GameCanvas {
+	constructor(canvas, canvasFunc) {
+		const this.gameState = {
+			ctx: canvas.getContext("2d");
+			canvasFunc: canvasFunc,
+		};
+	}
+
+	observer () {
+		this.gameState["canvasFunc"]();
 	}
 }

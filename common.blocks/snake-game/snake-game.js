@@ -13,20 +13,59 @@ function runFunc () {
 	snakeGame.style.width = widthInCells * cellSize + "px";
 	snakeGame.style.height = heightInCells * cellSize + "px";
 
+
 	const gameContainer = {
-		ctx: undefined
-	}
+		bootstrap: new Set(),
+		repeatable: new Set(),
+
+		isRunning: false,
+		isBootstrapLoaded: false;
+		isRepeatableLoaded: false;
+
+		start (repeatTime) {
+			this.isRunning = true;
+			loadBootstrap();
+			loadRepeatable(repeatTime);
+		},
+		stop () {
+			this.isRunning = false;
+			clearInterval(this.timerId);
+		},
+
+		play () {
+			this.isRunning = true;
+		}
+		pause () {
+			this.isRunning = false;
+		}
+	};
 
 	snakeCanvas(snakeGame, gameContainer, {
 		widthInCells: widthInCells,
 		heightInCells: heightInCells,
 		cellSize: cellSize,
 	});
-
-	setInterval( _ => nextFrame(gameContainer), refreshTime );
 }
 
-function nextFrame(container) {}
+loadBootstrap = () => {
+	loadFrame(this["bootstrap"]);
+}
+loadRepeatable = (repeatTime) => {
+	this.timerId = setInterval( _ => {
+		if (!this.isRunning) return;
+		if (!this.isBootstrapLoaded) return;
+		if (!this.isRepeatableLoaded) return;
+		
+		loadFrame(this["repeatable"]);
+	}, repeatTime );
+}
+
+function loadFrame (containerSet) {
+	for (let canvasObj of containerSet.keys()) {
+		canvasObj["observer"]();
+	}
+}
+
 
 export default {
 	run: runFunc,
