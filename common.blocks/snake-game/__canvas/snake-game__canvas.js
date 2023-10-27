@@ -51,13 +51,13 @@ function canvasSorter (modificator) {
 
 class GameCanvas {
 	constructor(canvas) {
-		this._gameState = {
+		this._gameStateObj = {
 			ctx: canvas.getContext("2d"),
 		};
 	}
 
 	observer () {
-		this.canvasFunc(this._gameState);
+		this.canvasFunc(this._gameStateObj);
 	}
 
 	setCanvasFunc (func) {

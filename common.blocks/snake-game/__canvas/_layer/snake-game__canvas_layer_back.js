@@ -1,1 +1,3 @@
-export default function () {console.log("back");}
+export default function (stateObj) {
+	
+}

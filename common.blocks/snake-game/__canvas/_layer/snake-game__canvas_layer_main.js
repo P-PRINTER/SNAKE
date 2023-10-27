@@ -1,1 +1,3 @@
-export default function () {console.log("main");}
+export default function (stateObj) {
+	
+}
