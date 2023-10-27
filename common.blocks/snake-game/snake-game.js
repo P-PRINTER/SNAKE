@@ -20,7 +20,6 @@ function runFunc () {
 
 		isRunning: false,
 		isBootstrapLoaded: false;
-		isRepeatableLoaded: false;
 
 		start (repeatTime) {
 			this.isRunning = true;
@@ -54,8 +53,7 @@ loadRepeatable = (repeatTime) => {
 	this.timerId = setInterval( _ => {
 		if (!this.isRunning) return;
 		if (!this.isBootstrapLoaded) return;
-		if (!this.isRepeatableLoaded) return;
-		
+
 		loadFrame(this["repeatable"]);
 	}, repeatTime );
 }
