@@ -1,5 +1,6 @@
 import snakeCanvas from "./__canvas/snake-game__canvas.js";
 
+
 function runFunc () {
 
 	const refreshTime = 100;
@@ -23,8 +24,8 @@ function runFunc () {
 
 		start (repeatTime) {
 			this.isRunning = true;
-			loadBootstrap();
-			loadRepeatable(repeatTime);
+			loadBootstrap.call(this);
+			loadRepeatable.call(this, repeatTime);
 		},
 		stop () {
 			this.isRunning = false;
@@ -44,15 +45,17 @@ function runFunc () {
 		heightInCells: heightInCells,
 		cellSize: cellSize,
 	});
+
+	gameContainer.start(refreshTime);
 }
 
-const loadBootstrap = () => {
+function loadBootstrap () {
 	loadFrame(this["bootstrap"]);
 }
-const loadRepeatable = (repeatTime) => {
+function loadRepeatable (repeatTime) {
 	this.timerId = setInterval( _ => {
 		if (!this.isRunning) return;
-		if (!this.isBootstrapLoaded) return;
+		//if (!this.isBootstrapLoaded) return;
 
 		loadFrame(this["repeatable"]);
 	}, repeatTime );

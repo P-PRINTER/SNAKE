@@ -40,10 +40,10 @@ function canvasSorter (modificator) {
 	const arrResult = [];
 
 	if (modificator === "main") {
-		arrResult.push["bootstrap"];
-		arrResult.push["repeatable"];
+		arrResult.push("bootstrap");
+		arrResult.push("repeatable");
 	} else if (modificator === "back") {
-		arrResult.push["bootstrap"];
+		arrResult.push("bootstrap");
 	}
 
 	return arrResult;
