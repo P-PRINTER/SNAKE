@@ -5,27 +5,55 @@ function runFunc () {
 
 	const refreshTime = 100;
 
-	const cellSize = 20;
-
-	let widthInCells	= 15;
-	let heightInCells	= 15;
+	const scaleParams = {
+		widthInCells: 15,
+		heightInCells: 15,
+		cellSize: 20,
+	};
 
 	const snakeGame = document.querySelector(".snake-game");
-	snakeGame.style.width = widthInCells * cellSize + "px";
-	snakeGame.style.height = heightInCells * cellSize + "px";
-
 
 	const gameContainer = {
 		bootstrap: new Set(),
 		repeatable: new Set(),
 
 		isRunning: false,
-		isBootstrapLoaded: false,
+		//isBootstrapLoaded: false,
 
-		start (repeatTime) {
-			this.isRunning = true;
-			loadBootstrap.call(this);
-			loadRepeatable.call(this, repeatTime);
+		gameBlock: snakeGame,
+		canvasLoadFunc: snakeCanvas,
+
+		scale: scaleParams,
+		repeatTime: refreshTime,
+
+		isLoaded: false,
+		isBuilded: false,
+
+		loadCanvas () {
+			this.canvasLoadFunc(this);
+			this.isLoaded = true;
+		},
+		buildMap () {
+			this.gameBlock.style.width = this.scale.widthInCells * this.scale.cellSize + "px";
+			this.gameBlock.style.height = this.scale.heightInCells * this.scale.cellSize + "px";
+
+			if (!this.isLoaded) this.loadCanvas();
+			loadFrame(this["bootstrap"]);
+
+			this.isBuilded = true;
+		},
+
+		start () {
+
+			if (!this.isLoaded) this.loadCanvas();
+			if (!this.isBuilded) this.buildMap();
+
+			this.isRunning = true;	
+			this.timerId = setInterval( _ => {
+
+				if (!this.isRunning) return;
+				loadFrame(this["repeatable"]);
+			}, this.repeatTime );
 		},
 		stop () {
 			this.isRunning = false;
@@ -40,26 +68,9 @@ function runFunc () {
 		},
 	};
 
-	snakeCanvas(snakeGame, gameContainer, {
-		widthInCells: widthInCells,
-		heightInCells: heightInCells,
-		cellSize: cellSize,
-	});
-
-	gameContainer.start(refreshTime);
+	gameContainer.start();
 }
 
-function loadBootstrap () {
-	loadFrame(this["bootstrap"]);
-}
-function loadRepeatable (repeatTime) {
-	this.timerId = setInterval( _ => {
-		if (!this.isRunning) return;
-		//if (!this.isBootstrapLoaded) return;
-
-		loadFrame(this["repeatable"]);
-	}, repeatTime );
-}
 
 function loadFrame (containerSet) {
 	for (let canvasObj of containerSet.keys()) {

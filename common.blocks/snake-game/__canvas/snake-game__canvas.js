@@ -7,30 +7,27 @@ const layerObj = {
 	"back": backLayerFunc,
 };
 
-export default function (gameBlock, container, {
-	widthInCells = 15,
-	heightInCells = 15,
-	cellSize = 10,
-} = {}) {
+export default function (container) {
 
-	const canvases = gameBlock.querySelectorAll(".snake-game__canvas");
+	const canvases = container.gameBlock.querySelectorAll(".snake-game__canvas");
+	const scaleParams = container.scale;
 
 	for (let canvas of canvases) {
 
-		let width = widthInCells * cellSize;
-		let height = heightInCells * cellSize;
-
-		canvas.width = width;
-		canvas.height = height;
-
+		const width = scaleParams.widthInCells * scaleParams.cellSize;
+		const height = scaleParams.heightInCells * scaleParams.cellSize;
 
 		const mod = canvas.className.split("_").at(-1);
+
 
 		const canvasObj = new GameCanvas(canvas);
 		canvasObj.setCanvasFunc( layerObj[mod] );
 
-		const setTypeArr = canvasSorter(mod);
-		for (let aSetType of setTypeArr) {
+		canvasObj.setWidth(width);
+		canvasObj.setHeight(height);
+
+		const typeOfSetArr = canvasSorter(mod);
+		for (let aSetType of typeOfSetArr) {
 			container[aSetType].add(canvasObj);
 		}
 	}
@@ -51,18 +48,25 @@ function canvasSorter (modificator) {
 
 class GameCanvas {
 	constructor(canvas) {
-		this._gameStateObj = {
+		this._canvas = canvas;
+		this._stateObj = {
 			ctx: canvas.getContext("2d"),
 		};
 	}
 
 	observer () {
-		this.canvasFunc(this._gameStateObj);
+		this.canvasFunc(this._stateObj);
 	}
 
+	canvasFunc (stateObj) {}
 	setCanvasFunc (func) {
 		this.canvasFunc = func;
 	}
 
-	canvasFunc () {}
+	setWidth (value) {
+		this._canvas.width = value;
+	}
+	setHeight (value) {
+		this._canvas.height = value;
+	}
 }
