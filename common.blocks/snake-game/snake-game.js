@@ -9,6 +9,13 @@ function runFunc () {
 		widthInCells: 15,
 		heightInCells: 15,
 		cellSize: 20,
+
+		get width () {
+			return this.widthInCells * this.cellSize;
+		},
+		get height () {
+			return this.heightInCells * this.cellSize;
+		},
 	};
 
 	const snakeGame = document.querySelector(".snake-game");

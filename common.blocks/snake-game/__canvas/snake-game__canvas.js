@@ -14,17 +14,14 @@ export default function (container) {
 
 	for (let canvas of canvases) {
 
-		const width = scaleParams.widthInCells * scaleParams.cellSize;
-		const height = scaleParams.heightInCells * scaleParams.cellSize;
-
 		const mod = canvas.className.split("_").at(-1);
-
 
 		const canvasObj = new GameCanvas(canvas);
 		canvasObj.setCanvasFunc( layerObj[mod] );
+		canvasObj.setCtxScaleParams(scaleParams);
 
-		canvasObj.setWidth(width);
-		canvasObj.setHeight(height);
+		canvasObj.setWidth(scaleParams.width);
+		canvasObj.setHeight(scaleParams.height);
 
 		const typeOfSetArr = canvasSorter(mod);
 		for (let aSetType of typeOfSetArr) {
@@ -50,7 +47,7 @@ class GameCanvas {
 	constructor(canvas) {
 		this._canvas = canvas;
 		this._stateObj = {
-			ctx: canvas.getContext("2d"),
+			context: canvas.getContext("2d"),
 		};
 	}
 
@@ -63,10 +60,13 @@ class GameCanvas {
 		this.canvasFunc = func;
 	}
 
-	setWidth (value) {
-		this._canvas.width = value;
+	setWidth (numValue) {
+		this._canvas.width = numValue;
 	}
-	setHeight (value) {
-		this._canvas.height = value;
+	setHeight (numValue) {
+		this._canvas.height = numValue;
+	}
+	setCtxScaleParams(obj) {
+		this._stateObj.scaleParams = obj;
 	}
 }
