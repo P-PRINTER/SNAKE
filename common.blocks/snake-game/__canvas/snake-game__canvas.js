@@ -6,7 +6,7 @@ export default function snakeCanvas (gameBlock, container, {
 	widthInCells = 15,
 	heightInCells = 15,
 	cellSize = 10,
-}) {
+} = {}) {
 
 	const canvas = gameBlock.querySelectorAll(".snake-game__canvas");
 
