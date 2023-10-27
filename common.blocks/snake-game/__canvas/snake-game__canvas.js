@@ -1,14 +1,14 @@
-import mainLayer from "./_layer/snake-game__canvas_layer_main.js";
-import backLayer from "./_layer/snake-game__canvas_layer_back.js";
+import mainLayerFunc from "./_layer/snake-game__canvas_layer_main.js";
+import backLayerFunc from "./_layer/snake-game__canvas_layer_back.js";
 
 
-export default function snakeCanvas (gameBlock, container, {
+export default function (gameBlock, container, {
 	widthInCells = 15,
 	heightInCells = 15,
 	cellSize = 10,
 } = {}) {
 
-	const canvas = gameBlock.querySelectorAll(".snake-game__canvas");
+	const canvases = gameBlock.querySelectorAll(".snake-game__canvas");
 
 	for (let canvas of canvases) {
 
@@ -18,8 +18,7 @@ export default function snakeCanvas (gameBlock, container, {
 		canvas.width = width;
 		canvas.height = height;
 
-		const ctx = canvas.getContext("2d");
-		ctx.fillRect(width / 4, height / 4, width / 2, height / 2);
+		
 	}
 }
 
