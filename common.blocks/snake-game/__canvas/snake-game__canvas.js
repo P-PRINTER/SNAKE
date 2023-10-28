@@ -61,12 +61,12 @@ class GameCanvas {
 	}
 
 	setWidth (numValue) {
-		this._canvas.width = numValue;
+		this._canvas["width"] = numValue;
 	}
 	setHeight (numValue) {
-		this._canvas.height = numValue;
+		this._canvas["height"] = numValue;
 	}
 	setCtxScaleParams(obj) {
-		this._stateObj.scaleParams = obj;
+		this._stateObj["scaleParams"] = obj;
 	}
 }
