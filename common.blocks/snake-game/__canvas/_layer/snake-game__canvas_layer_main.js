@@ -66,8 +66,16 @@ class SnakeBody {
 		[ this._directs["RIGHT"]	]	: [+1, 0],
 		[ this._directs["BOTTOM"]	]	: [0, +1],
 	};
+	_directAntagonists = {
+		[ this._directs["LEFT"]		]	: this._directs["RIGHT"],
+		[ this._directs["TOP"]		]	: this._directs["BOTTOM"],
+		[ this._directs["RIGHT"]	]	: this._directs["LEFT"],
+		[ this._directs["BOTTOM"]	]	: this._directs["TOP"],
+	};
 	_direct = this._directs["LEFT"];
-	_unallowedDirect = this._directs["RIGHT"];
+	get _unallowedDirect () {
+		this._directAntagonists[this._direct];
+	}
 
 	eat () {
 		this._growthEnergy++;
@@ -94,6 +102,8 @@ class SnakeBody {
 
 	setDirect (symbol) {
 		if ( !this._directCodes[symbol] ) throw new Error("Uncorrect direction symbol");
+		if ( symbol === this._unallowedDirect ) return;
+		
 		this._direct = symbol;
 	}
 	getDirect () {
