@@ -20,12 +20,9 @@ function bootstrapFunc (stateObj) {
 
 	stateObj["snake"] = new SnakeBody(body);
 	stateObj.isBootstrapped = true;
-}
-
-function doStep (stateObj) {
-	stateObj["snake"].move();
 
 	document.addEventListener("keydown", evt => {
+		if (!stateObj.isMoved) return;
 
 		let nextDirect;
 		switch (evt.code) {
@@ -43,8 +40,14 @@ function doStep (stateObj) {
 				break;
 		}
 
+		stateObj.isMoved = false;
 		nextDirect && stateObj["snake"].setDirect(nextDirect);
 	});
+}
+
+function doStep (stateObj) {
+	stateObj.isMoved = true;
+	stateObj["snake"].move();
 }
 
 function render (stateObj) {

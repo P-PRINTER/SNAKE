@@ -3,7 +3,7 @@ import snakeCanvas from "./__canvas/snake-game__canvas.js";
 
 function runFunc () {
 
-	const refreshTime = 100;
+	const refreshTime = 150;
 
 	const scaleParams = {
 		widthInCells: 15,
@@ -51,6 +51,7 @@ function runFunc () {
 		},
 
 		start () {
+			if (this.isRunning) return;
 
 			if (!this.isLoaded) this.loadCanvas();
 			if (!this.isBuilded) this.buildMap();
@@ -75,7 +76,9 @@ function runFunc () {
 		},
 	};
 
-	gameContainer.start();
+	gameContainer.buildMap();
+
+	document.addEventListener( "keyup", _ => gameContainer.start() );
 }
 
 
