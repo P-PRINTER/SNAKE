@@ -20,12 +20,31 @@ function bootstrapFunc (stateObj) {
 
 	stateObj["snake"] = new SnakeBody(body);
 	stateObj.isBootstrapped = true;
-	console.log(body);
 }
 
 function doStep (stateObj) {
 	stateObj["snake"].move();
-	//console.log(stateObj["snake"]._body);
+
+	document.addEventListener("keydown", evt => {
+
+		let nextDirect;
+		switch (evt.code) {
+			case "ArrowUp":
+				nextDirect = stateObj["snake"].getDirectByDescript("TOP");
+				break;
+			case "ArrowLeft":
+				nextDirect = stateObj["snake"].getDirectByDescript("LEFT");
+				break;
+			case "ArrowDown":
+				nextDirect = stateObj["snake"].getDirectByDescript("BOTTOM");
+				break;
+			case "ArrowRight":
+				nextDirect = stateObj["snake"].getDirectByDescript("RIGHT");
+				break;
+		}
+
+		nextDirect && stateObj["snake"].setDirect(nextDirect);
+	});
 }
 
 function render (stateObj) {
@@ -74,7 +93,7 @@ class SnakeBody {
 	};
 	_direct = this._directs["LEFT"];
 	get _unallowedDirect () {
-		this._directAntagonists[this._direct];
+		return this._directAntagonists[this._direct];
 	}
 
 	eat () {
@@ -103,17 +122,20 @@ class SnakeBody {
 	setDirect (symbol) {
 		if ( !this._directCodes[symbol] ) throw new Error("Uncorrect direction symbol");
 		if ( symbol === this._unallowedDirect ) return;
-		
+
 		this._direct = symbol;
 	}
 	getDirect () {
 		return this._direct;
 	}
-	getTextDirect () {
+	getDirectDescript () {
 		return this._direct.description;
 	}
-	getDirects () {
-		return this._directs;
+	getDirectByDescript (text) {
+		return this._directs[text];
+	}
+	getDescriptByDirect (symbol) {
+		return symbol.description;
 	}
 
 	getHead () {

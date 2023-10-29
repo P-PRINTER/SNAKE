@@ -8,7 +8,7 @@ function runFunc () {
 	const scaleParams = {
 		widthInCells: 15,
 		heightInCells: 15,
-		cellSize: 20,
+		cellSize: 40,
 
 		get width () {
 			return this.widthInCells * this.cellSize;
