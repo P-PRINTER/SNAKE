@@ -48,6 +48,9 @@ class GameCanvas {
 		this._canvas = canvas;
 		this._stateObj = {
 			context: canvas.getContext("2d"),
+			isAlive: true,
+			isWinned: false,
+			gameOvered: false,
 		};
 	}
 

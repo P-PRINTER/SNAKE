@@ -61,6 +61,8 @@ function runFunc () {
 
 				if (!this.isRunning) return;
 				loadFrame(this["repeatable"]);
+
+				//if ()
 			}, this.repeatTime );
 		},
 		stop () {
@@ -78,7 +80,7 @@ function runFunc () {
 
 	gameContainer.buildMap();
 
-	document.addEventListener( "keyup", _ => gameContainer.start() );
+	document.addEventListener( "keyup", _ => gameContainer.start(), {once: true} );
 }
 
 

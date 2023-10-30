@@ -21,6 +21,7 @@ function bootstrapFunc (stateObj) {
 	stateObj["snake"] = new SnakeBody(body);
 	stateObj.isBootstrapped = true;
 
+	// event to change direction
 	document.addEventListener("keydown", evt => {
 		if (!stateObj.isMoved) return;
 
@@ -46,9 +47,38 @@ function bootstrapFunc (stateObj) {
 }
 
 function doStep (stateObj) {
+
+	/*if ( stateObj["snake"].isDeaded() ) {
+		document.addEventListener("keydown", reload, once);
+	}*/
+
+	const headX = stateObj["snake"].getHead()[0];
+	const headY = stateObj["snake"].getHead()[1];
+
+
+	const wall = new Array(2);
+
+	if 			(headX === 0) {
+		wall[0] = stateObj["snake"].getDirectByDescript("LEFT");
+	} else if 	(headX === stateObj["scaleParams"].widthInCells -1) {
+		wall[0] = stateObj["snake"].getDirectByDescript("RIGHT");
+	}
+	if 	(headY === 0) {
+		wall[1] = stateObj["snake"].getDirectByDescript("TOP");
+	} else if 	(headY === stateObj["scaleParams"].heightInCells -1) {
+		wall[1] = stateObj["snake"].getDirectByDescript("BOTTOM");
+	}
+
+	stateObj["snake"].move(wall);
 	stateObj.isMoved = true;
-	stateObj["snake"].move();
-}
+}/*
+const reload = patrial();
+
+function partial (func, ...argsBound) {
+  return function (...args) {
+    return func.call(this, ...argsBound, ...args);
+  }
+}*/
 
 function render (stateObj) {
 
@@ -71,6 +101,8 @@ class SnakeBody {
 		this._body = body;
 		this._size = body ? body.length : 0;
 	}
+
+	_isDeaded = false;
 
 	_growthEnergy = 0;
 	_headIndex = 0;
@@ -103,7 +135,15 @@ class SnakeBody {
 		this._growthEnergy++;
 	}
 
-	move () {
+	move (wall) {
+		if (this._isDeaded) return;
+
+		for (let side of wall) {
+			if (side === this._direct) {
+				this.dead();
+				return;
+			}
+		}
 
 		let nextPos = this.getNextHeadCoords();
 		this.bodyTraversal( bodyPart => {
@@ -122,8 +162,17 @@ class SnakeBody {
 		}
 	}
 
+	dead () {
+		this._isDeaded = true;
+	}
+	isDeaded () {
+		return this._isDeaded;
+	}
+
 	setDirect (symbol) {
 		if ( !this._directCodes[symbol] ) throw new Error("Uncorrect direction symbol");
+
+		if (this._isDeaded) return;
 		if ( symbol === this._unallowedDirect ) return;
 
 		this._direct = symbol;
@@ -138,7 +187,7 @@ class SnakeBody {
 		return this._directs[text];
 	}
 	getDescriptByDirect (symbol) {
-		return symbol.description;
+		return typeof symbol === "symbol" ? symbol.description: undefined;
 	}
 
 	getHead () {
@@ -152,6 +201,8 @@ class SnakeBody {
 	}
 
 	setTail (bodyPart) {
+		if (this._isDeaded) return;
+
 		this.bodyPush(bodyPart);
 		this._size++;
 		this._tailIndex++;
