@@ -13,7 +13,7 @@ function bootstrapFunc (stateObj) {
 	// needing change from array to linked list
 	for (let i = 0; i < size; i++) {
 		body[i] = [
-			Math.floor(stateObj["scaleParams"].widthInCells / 2) - size + i,
+			Math.floor(stateObj["scaleParams"].widthInCells / 1.5) - size + i,
 			Math.floor(stateObj["scaleParams"].heightInCells / 2),
 		];
 	}
@@ -48,9 +48,15 @@ function bootstrapFunc (stateObj) {
 
 function doStep (stateObj) {
 
-	/*if ( stateObj["snake"].isDeaded() ) {
-		document.addEventListener("keydown", reload, once);
-	}*/
+	if ( stateObj["snake"].isDeaded() ) {
+		const handler = evt => {
+			if (evt.code === "Enter") {
+				bootstrapFunc(stateObj);
+				document.removeEventListener("keydown", handler);
+			}
+		};
+		document.addEventListener("keydown", handler);
+	}
 
 	const headX = stateObj["snake"].getHead()[0];
 	const headY = stateObj["snake"].getHead()[1];
@@ -71,14 +77,7 @@ function doStep (stateObj) {
 
 	stateObj["snake"].move(wall);
 	stateObj.isMoved = true;
-}/*
-const reload = patrial();
-
-function partial (func, ...argsBound) {
-  return function (...args) {
-    return func.call(this, ...argsBound, ...args);
-  }
-}*/
+}
 
 function render (stateObj) {
 
