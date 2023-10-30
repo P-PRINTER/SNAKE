@@ -23,9 +23,8 @@ function bootstrapFunc (stateObj) {
 
 	// event to change direction
 	document.addEventListener("keydown", evt => {
-		if (!stateObj.isMoved) return;
-
 		let nextDirect;
+
 		switch (evt.code) {
 			case "ArrowUp":
 				nextDirect = stateObj["snake"].getDirectByDescript("TOP");
@@ -40,9 +39,7 @@ function bootstrapFunc (stateObj) {
 				nextDirect = stateObj["snake"].getDirectByDescript("RIGHT");
 				break;
 		}
-
-		stateObj.isMoved = false;
-		nextDirect && stateObj["snake"].setDirect(nextDirect);
+		if (nextDirect) stateObj["cache"].direct = nextDirect;	
 	});
 }
 
@@ -52,6 +49,9 @@ function doStep (stateObj) {
 		stateObj["gameStatus"].gameOvered = true;
 		stateObj.isBootstrapped = false;
 	}
+
+	changeDirect(stateObj);
+	stateObj["snake"].eat();
 
 	const headX = stateObj["snake"].getHead()[0];
 	const headY = stateObj["snake"].getHead()[1];
@@ -72,6 +72,15 @@ function doStep (stateObj) {
 
 	stateObj["snake"].move(wall);
 	stateObj.isMoved = true;
+}
+
+function changeDirect (stateObj) {
+	if (!stateObj.isMoved) return;
+	stateObj.isMoved = false;
+
+	const nextDirect = stateObj["cache"].direct;
+	nextDirect && stateObj["snake"].setDirect(nextDirect);
+	stateObj["cache"].direct = undefined;
 }
 
 function render (stateObj) {
