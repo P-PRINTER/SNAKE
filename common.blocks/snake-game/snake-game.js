@@ -29,6 +29,10 @@ function runFunc () {
 
 		gameBlock: snakeGame,
 		canvasLoadFunc: snakeCanvas,
+		gameStatus: {
+			isWinned: false,
+			gameOvered: false,
+		},
 
 		scale: scaleParams,
 		repeatTime: refreshTime,
@@ -58,11 +62,25 @@ function runFunc () {
 
 			this.isRunning = true;	
 			this.timerId = setInterval( _ => {
-
 				if (!this.isRunning) return;
+
 				loadFrame(this["repeatable"]);
 
-				//if ()
+				if (this.gameStatus.gameOvered || this.gameStatus.isWinned) {
+					this.stop();
+
+					this.gameStatus.isWinned = false;
+					this.gameStatus.gameOvered = false;
+
+					const enterHandler = evt => {
+						if ( evt.code !== "Enter" ) return;
+
+						this.buildMap();
+						document.removeEventListener("keydown", enterHandler);
+						document.addEventListener( "keydown", _ => gameContainer.start(), {once: true} );
+					};
+					document.addEventListener("keydown", enterHandler);
+				}
 			}, this.repeatTime );
 		},
 		stop () {

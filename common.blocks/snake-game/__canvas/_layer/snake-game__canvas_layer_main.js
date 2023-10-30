@@ -7,7 +7,7 @@ export default function (stateObj) {
 
 function bootstrapFunc (stateObj) {
 
-	const size = 3;
+	const size = 7;
 	const body = new Array(size);
 
 	// needing change from array to linked list
@@ -48,14 +48,9 @@ function bootstrapFunc (stateObj) {
 
 function doStep (stateObj) {
 
-	if ( stateObj["snake"].isDeaded() ) {
-		const handler = evt => {
-			if (evt.code === "Enter") {
-				bootstrapFunc(stateObj);
-				document.removeEventListener("keydown", handler);
-			}
-		};
-		document.addEventListener("keydown", handler);
+	if ( stateObj["snake"].isDead() ) {
+		stateObj["gameStatus"].gameOvered = true;
+		stateObj.isBootstrapped = false;
 	}
 
 	const headX = stateObj["snake"].getHead()[0];
@@ -101,7 +96,7 @@ class SnakeBody {
 		this._size = body ? body.length : 0;
 	}
 
-	_isDeaded = false;
+	_isDead = false;
 
 	_growthEnergy = 0;
 	_headIndex = 0;
@@ -135,7 +130,7 @@ class SnakeBody {
 	}
 
 	move (wall) {
-		if (this._isDeaded) return;
+		if (this._isDead) return;
 
 		for (let side of wall) {
 			if (side === this._direct) {
@@ -162,16 +157,16 @@ class SnakeBody {
 	}
 
 	dead () {
-		this._isDeaded = true;
+		this._isDead = true;
 	}
-	isDeaded () {
-		return this._isDeaded;
+	isDead () {
+		return this._isDead;
 	}
 
 	setDirect (symbol) {
 		if ( !this._directCodes[symbol] ) throw new Error("Uncorrect direction symbol");
 
-		if (this._isDeaded) return;
+		if (this._isDead) return;
 		if ( symbol === this._unallowedDirect ) return;
 
 		this._direct = symbol;
