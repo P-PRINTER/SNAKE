@@ -5,9 +5,21 @@ export default function (stateObj) {
 	render(stateObj);
 }
 
+function sendWinSignal (gameStatus) {
+	sendStopSignal(gameStatus);
+	gameStatus.isWinned = true;
+}
+function sendGameOverSignal (gameStatus) {
+	sendStopSignal(gameStatus);
+	gameStatus.gameOvered = true;
+}
+function sendStopSignal (gameStatus) {
+	gameStatus.isStopped = true;
+}
+
 function bootstrapFunc (stateObj) {
 
-	const size = 6;
+	const size = 4;
 	const body = new Array(size);
 
 	// needing change from array to linked list
@@ -41,26 +53,46 @@ function bootstrapFunc (stateObj) {
 				nextDirect = stateObj["snake"].getDirectByDescript("RIGHT");
 				break;
 		}
-		if (nextDirect) stateObj["cache"].direct = nextDirect;	
+		if (nextDirect) stateObj["cache"].direct = nextDirect;
 	});
+
+	createApple(stateObj);
 
 
 	stateObj.isBootstrapped = true;
 }
 
+
 function doStep (stateObj) {
 
 	changeDirect(stateObj);
+	stateObj["snake"].isEated() && createApple(stateObj);
 
-	const walls = detectWalls(stateObj);
+	const walls 		= detectWalls(stateObj);
+	const appleDirect 	= detectApple(stateObj);
 
-	stateObj["snake"].move(walls);
-	stateObj.isMoved = true;
+	stateObj["snake"].move(walls, appleDirect);
 
-	if ( stateObj["snake"].isDead() ) {
-		stateObj["gameStatus"].gameOvered = true;
+
+	if ( stateObj["snake"].getSize() ===
+		stateObj["scaleParams"].widthInCells * stateObj["scaleParams"].heightInCells
+	) {
+		sendWinSignal( stateObj["gameStatus"] );
 		stateObj.isBootstrapped = false;
 	}
+
+	if ( stateObj["snake"].isDead() ) {
+		sendGameOverSignal( stateObj["gameStatus"] )
+		stateObj.isBootstrapped = false;
+	}
+}
+
+function changeDirect (stateObj) {
+
+	const nextDirect = stateObj["cache"].direct;
+	stateObj["cache"].direct = undefined;
+
+	nextDirect && stateObj["snake"].setDirect(nextDirect);
 }
 
 function detectWalls (stateObj) {
@@ -89,13 +121,14 @@ function detectWalls (stateObj) {
 	}
 
 	for (let side of visibleZone) {
-		stateObj["snake"].bodyTraversal( bodyPart => {
 
-			const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
-			const sideCoords = [
-				stateObj["snake"].getHead()[0] + sideCoef[0],
-				stateObj["snake"].getHead()[1] + sideCoef[1],
-			];
+		const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
+		const sideCoords = [
+			head[0] + sideCoef[0],
+			head[1] + sideCoef[1],
+		];
+
+		stateObj["snake"].bodyTraversal( bodyPart => {
 
 			if (bodyPart[0] === sideCoords[0] && bodyPart[1] === sideCoords[1]) {
 				walls.push(side);
@@ -105,31 +138,106 @@ function detectWalls (stateObj) {
 
 	return walls;
 }
+function detectApple (stateObj) {
+	let appleDirect;
 
-function changeDirect (stateObj) {
-	if (!stateObj.isMoved) return;
-	stateObj.isMoved = false;
+	const head = stateObj["snake"].getHead();
+	const apple = stateObj["apple"];
+	const visibleZone = stateObj["snake"].getVisibleZone();
 
-	const nextDirect = stateObj["cache"].direct;
-	nextDirect && stateObj["snake"].setDirect(nextDirect);
-	stateObj["cache"].direct = undefined;
+	for (let side of visibleZone) {
+
+		const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
+		const sideCoords = [
+			head[0] + sideCoef[0],
+			head[1] + sideCoef[1],
+		];
+
+
+		if (apple[0] === sideCoords[0] && apple[1] === sideCoords[1]) {
+			appleDirect = side;
+		}
+	}
+
+	return appleDirect;
+}
+
+function createApple (stateObj) {
+
+	let x,
+		y;
+
+
+	let isFreePlace;
+	do {
+
+		isFreePlace = true;
+
+		x = Math.floor(Math.random() * stateObj["scaleParams"].widthInCells);
+		y = Math.floor(Math.random() * stateObj["scaleParams"].heightInCells);
+
+		stateObj["snake"].bodyTraversal( bodyPart => {
+
+			if (x === bodyPart[0] && y === bodyPart[1]) {
+				isFreePlace = false;
+			}
+		} );
+	} while (!isFreePlace);
+
+	stateObj["apple"] = [x, y];
+	stateObj["snake"].setHungry();
 }
 
 
 function render (stateObj) {
 
-
-	const ctx = stateObj["context"];
-	const cellSize = stateObj["scaleParams"].cellSize;
+	const ctx		= stateObj["context"];
+	const cellSize	= stateObj["scaleParams"].cellSize;
 
 	ctx.clearRect(0, 0, stateObj["scaleParams"].width, stateObj["scaleParams"].height);
-	ctx.fillStyle = "#00FF00";
 
+
+	const headCoef = 1;
+	const bodyCoef = 0.9;
+	const headColor = "#09F";
+	const bodyColor = "#0F0";
+	//const connectiveColor = bodyColor;
+
+	ctx.fillStyle = headColor;
+	const headSize = Math.floor(headCoef * cellSize)
+	const bodySize = Math.floor(bodyCoef * cellSize);
+
+	const headOffset = Math.floor((cellSize - headSize) / 2);
+	const bodyOffset = Math.floor((cellSize - bodySize) / 2);
+
+	const xHead = stateObj["snake"].getHead()[0] * cellSize + headOffset;
+	const yHead = stateObj["snake"].getHead()[1] * cellSize + headOffset;
+	ctx.fillRect(xHead, yHead, headSize, headSize)
+
+	ctx.fillStyle = bodyColor;
 	stateObj["snake"].bodyTraversal( bodyPart => {
-		const xPos = bodyPart[0] * cellSize;
-		const yPos = bodyPart[1] * cellSize;
-		ctx.fillRect(xPos, yPos, cellSize, cellSize);
+		const xBodyPart = bodyPart[0] * cellSize + bodyOffset;
+		const yBodyPart = bodyPart[1] * cellSize + bodyOffset;
+		ctx.fillRect(xBodyPart, yBodyPart, bodySize, bodySize);
+
+		/*
+		ctx.strokeStyle = connectiveColor;
+		ctx.beginPath();
+
+		const xLine1 = xBodyPart + Math.floor(bodySize / 2);
+		const yLine1 = yBodyPart + Math.floor(bodySize / 2);
+
+		ctx.moveTo(xLine1, yLine1);
+		*/
 	} );
+
+
+	if ( stateObj["snake"].isEated() ) return;
+
+	const apple = stateObj["apple"];
+
+	ctx.fillStyle = "#F00";
+	ctx.fillRect(apple[0] * cellSize, apple[1] * cellSize, cellSize, cellSize);
 }
 
 
@@ -170,9 +278,16 @@ class SnakeBody {
 
 	eat () {
 		this._growthEnergy++;
+		this._isEated = true;
+	}
+	setHungry() {
+		this._isEated = false;
+	}
+	isEated () {
+		return this._isEated;
 	}
 
-	move (walls) {
+	move (walls, appleDirect) {
 		if (this._isDead) return;
 
 		for (let wall of walls) {
@@ -180,6 +295,10 @@ class SnakeBody {
 				this.dead();
 				return;
 			}
+		}
+
+		if (appleDirect === this._direct) {
+			this.eat();
 		}
 
 		let nextPos = this.getNextHeadCoords();
@@ -206,8 +325,16 @@ class SnakeBody {
 		return this._isDead;
 	}
 
+	getSize() {
+		return this._size;
+	}
+
 	setDirect (symbol) {
-		if ( !this._directCodes[symbol] ) throw new Error("Uncorrect direction symbol");
+		if ( !this._directCodes[symbol] ) {
+			const errMsg = "Uncorrecting direction " + typeof symbol + " as Symbol type: "
+				+ (typeof symbol === "symbol" ? symbol.description : symbol);
+			throw new Error(errMsg);
+		};
 
 		if (this._isDead) return;
 		if ( symbol === this._unallowedDirect ) return;

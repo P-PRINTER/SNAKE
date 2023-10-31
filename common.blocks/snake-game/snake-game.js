@@ -32,6 +32,7 @@ function runFunc () {
 		gameStatus: {
 			isWinned: false,
 			gameOvered: false,
+			isStopped: false,
 		},
 
 		scale: scaleParams,
@@ -66,20 +67,11 @@ function runFunc () {
 
 				loadFrame(this["repeatable"]);
 
-				if (this.gameStatus.gameOvered || this.gameStatus.isWinned) {
-					this.stop();
+				if (this.gameStatus.isWinned) winFunc(this);
+				if (this.gameStatus.gameOvered) gameOverFunc(this);
 
-					this.gameStatus.isWinned = false;
-					this.gameStatus.gameOvered = false;
-
-					const enterHandler = evt => {
-						if ( evt.code !== "Enter" ) return;
-
-						this.buildMap();
-						document.removeEventListener("keydown", enterHandler);
-						document.addEventListener( "keydown", _ => gameContainer.start(), {once: true} );
-					};
-					document.addEventListener("keydown", enterHandler);
+				if (this.gameStatus.isStopped) {
+					reloadGame.call(this);
 				}
 			}, this.repeatTime );
 		},
@@ -107,6 +99,32 @@ function loadFrame (containerSet) {
 		canvasObj["observer"]();
 	}
 }
+
+function reloadGame () {
+	this.stop();
+
+	if (this.gameStatus.isWinned)	this.gameStatus.isWinned = false;
+	if (this.gameStatus.gameOvered) this.gameStatus.gameOvered = false;
+	if (this.gameStatus.isStopped)	this.gameStatus.isStopped = false;
+
+	const enterHandler = evt => {
+		if ( evt.code !== "Enter" ) return;
+
+		this.gameBlock.classList.add 	("snake-game_outline-color_black");
+		this.gameBlock.classList.remove ("snake-game_outline-color_blue");
+
+		this.buildMap();
+		document.removeEventListener("keydown", enterHandler);
+		document.addEventListener( "keydown", _ => this.start(), {once: true} );
+	};
+	document.addEventListener("keydown", enterHandler);
+}
+
+function winFunc (gameContainer) {
+	gameContainer.gameBlock.classList.remove 	("snake-game_outline-color_black");
+	gameContainer.gameBlock.classList.add 		("snake-game_outline-color_blue");
+}
+function gameOverFunc (gameContainer) {}
 
 
 export default {

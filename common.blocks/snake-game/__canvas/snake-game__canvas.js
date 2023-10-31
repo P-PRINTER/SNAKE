@@ -49,7 +49,6 @@ class GameCanvas {
 		this._stateObj = {
 			context: canvas.getContext("2d"),
 			isBootstrapped: false,
-			isAlive: true,
 			cache: {},
 			gameStatus: {},
 			developMode: false,

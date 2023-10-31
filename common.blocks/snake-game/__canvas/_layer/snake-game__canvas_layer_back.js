@@ -1,5 +1,7 @@
 export default function (stateObj) {
 
+	stateObj.isBootstrapped = true;
+
 	const ctx			= stateObj["context"];
 	const scaleParams	= stateObj["scaleParams"];
 
