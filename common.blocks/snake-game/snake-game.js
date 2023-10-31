@@ -3,7 +3,7 @@ import snakeCanvas from "./__canvas/snake-game__canvas.js";
 
 function runFunc () {
 
-	const refreshTime = 150;
+	const refreshTime = 120;
 
 	const scaleParams = {
 		widthInCells: 15,

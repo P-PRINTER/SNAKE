@@ -7,7 +7,7 @@ export default function (stateObj) {
 
 function bootstrapFunc (stateObj) {
 
-	const size = 7;
+	const size = 6;
 	const body = new Array(size);
 
 	// needing change from array to linked list
@@ -19,7 +19,9 @@ function bootstrapFunc (stateObj) {
 	}
 
 	stateObj["snake"] = new SnakeBody(body);
-	stateObj.isBootstrapped = true;
+
+	const directValue = stateObj["snake"].getDirectByDescript("LEFT");
+	stateObj["snake"].setDirect( directValue );
 
 	// event to change direction
 	document.addEventListener("keydown", evt => {
@@ -41,37 +43,67 @@ function bootstrapFunc (stateObj) {
 		}
 		if (nextDirect) stateObj["cache"].direct = nextDirect;	
 	});
+
+
+	stateObj.isBootstrapped = true;
 }
 
 function doStep (stateObj) {
+
+	changeDirect(stateObj);
+
+	const walls = detectWalls(stateObj);
+
+	stateObj["snake"].move(walls);
+	stateObj.isMoved = true;
 
 	if ( stateObj["snake"].isDead() ) {
 		stateObj["gameStatus"].gameOvered = true;
 		stateObj.isBootstrapped = false;
 	}
+}
 
-	changeDirect(stateObj);
-	stateObj["snake"].eat();
+function detectWalls (stateObj) {
+	let walls = [];
 
-	const headX = stateObj["snake"].getHead()[0];
-	const headY = stateObj["snake"].getHead()[1];
+	const TOP 		= stateObj["snake"].getDirectByDescript("TOP");
+	const LEFT 		= stateObj["snake"].getDirectByDescript("LEFT");
+	const BOTTOM 	= stateObj["snake"].getDirectByDescript("BOTTOM");
+	const RIGHT		= stateObj["snake"].getDirectByDescript("RIGHT");
+
+	const head = stateObj["snake"].getHead();
+	const visibleZone = stateObj["snake"].getVisibleZone();
 
 
-	const wall = new Array(2);
-
-	if 			(headX === 0) {
-		wall[0] = stateObj["snake"].getDirectByDescript("LEFT");
-	} else if 	(headX === stateObj["scaleParams"].widthInCells -1) {
-		wall[0] = stateObj["snake"].getDirectByDescript("RIGHT");
+	if 	(head[0] === 0) {
+		walls.push(LEFT);
 	}
-	if 	(headY === 0) {
-		wall[1] = stateObj["snake"].getDirectByDescript("TOP");
-	} else if 	(headY === stateObj["scaleParams"].heightInCells -1) {
-		wall[1] = stateObj["snake"].getDirectByDescript("BOTTOM");
+	if 	(head[1] === 0) {
+		walls.push(TOP);
+	}
+	if 	(head[0] === stateObj["scaleParams"].widthInCells -1) {
+		walls.push(RIGHT);
+	}
+	if 	(head[1] === stateObj["scaleParams"].heightInCells -1) {
+		walls.push(BOTTOM);
 	}
 
-	stateObj["snake"].move(wall);
-	stateObj.isMoved = true;
+	for (let side of visibleZone) {
+		stateObj["snake"].bodyTraversal( bodyPart => {
+
+			const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
+			const sideCoords = [
+				stateObj["snake"].getHead()[0] + sideCoef[0],
+				stateObj["snake"].getHead()[1] + sideCoef[1],
+			];
+
+			if (bodyPart[0] === sideCoords[0] && bodyPart[1] === sideCoords[1]) {
+				walls.push(side);
+			}
+		} );
+	}
+
+	return walls;
 }
 
 function changeDirect (stateObj) {
@@ -83,7 +115,9 @@ function changeDirect (stateObj) {
 	stateObj["cache"].direct = undefined;
 }
 
+
 function render (stateObj) {
+
 
 	const ctx = stateObj["context"];
 	const cellSize = stateObj["scaleParams"].cellSize;
@@ -129,7 +163,7 @@ class SnakeBody {
 		[ this._directs["RIGHT"]	]	: this._directs["LEFT"],
 		[ this._directs["BOTTOM"]	]	: this._directs["TOP"],
 	};
-	_direct = this._directs["LEFT"];
+	_direct = undefined;
 	get _unallowedDirect () {
 		return this._directAntagonists[this._direct];
 	}
@@ -138,11 +172,11 @@ class SnakeBody {
 		this._growthEnergy++;
 	}
 
-	move (wall) {
+	move (walls) {
 		if (this._isDead) return;
 
-		for (let side of wall) {
-			if (side === this._direct) {
+		for (let wall of walls) {
+			if (wall === this._direct) {
 				this.dead();
 				return;
 			}
@@ -187,10 +221,35 @@ class SnakeBody {
 		return this._direct.description;
 	}
 	getDirectByDescript (text) {
-		return this._directs[text];
+		const resultDirect = this._directs[text];
+		if ( !resultDirect ) throw new Error("Uncorrecting direction symbol description");
+
+		return resultDirect;
 	}
 	getDescriptByDirect (symbol) {
+		if ( !this._directCodes[symbol] ) throw new Error("Uncorrecting direction symbol");
+
 		return typeof symbol === "symbol" ? symbol.description: undefined;
+	}
+
+	getDirectCodeByDirect (symbol) {
+		if ( !this._directCodes[symbol] ) throw new Error("Uncorrecting direction symbol");
+
+		return this._directCodes[symbol];
+	}
+
+	getVisibleZone() {
+		const zone = new Array(3);
+
+		let sideIndex = 0;
+		for (let direct of Object.values(this._directs)) {
+			if (direct === this._unallowedDirect) continue;
+
+			zone[sideIndex] = direct;
+			sideIndex++;
+		}
+
+		return zone;
 	}
 
 	getHead () {

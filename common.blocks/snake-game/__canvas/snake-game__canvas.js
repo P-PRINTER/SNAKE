@@ -52,6 +52,7 @@ class GameCanvas {
 			isAlive: true,
 			cache: {},
 			gameStatus: {},
+			developMode: false,
 		};
 	}
 
