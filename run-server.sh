@@ -1,3 +1,13 @@
 #!/bin/bash
 
-node server.js
+if [ -n "$SNAKE_DIR" ] && [ "$SNAKE_DIR" != "$PWD" ]
+then
+	cd $SNAKE_DIR
+fi
+
+if [ -e ./server.js ]
+then
+	node ./server.js > ./logs.txt
+else
+	echo "You need to open the SNAKE directory and run this command from there again"
+fi
