@@ -1,4 +1,4 @@
-import snakeCanvas from "./__render/game-block__render.js";
+import renderOfGameBlock from "./__render/game-block__render.js";
 
 
 function runFunc () {
@@ -18,8 +18,6 @@ function runFunc () {
 		},
 	};
 
-	const snakeGame = document.querySelector(".game-block");
-
 	const gameContainer = {
 		bootstrap: new Set(),
 		repeatable: new Set(),
@@ -27,8 +25,8 @@ function runFunc () {
 		isRunning: false,
 		//isBootstrapLoaded: false,
 
-		gameBlock: snakeGame,
-		canvasLoadFunc: snakeCanvas,
+		gameBlock: document.querySelector(".game-block"),
+		renderLoadFunc: renderOfGameBlock,
 		gameStatus: {
 			isWinned: false,
 			gameOvered: false,
@@ -41,15 +39,15 @@ function runFunc () {
 		isLoaded: false,
 		isBuilded: false,
 
-		loadCanvas () {
-			this.canvasLoadFunc(this);
+		loadRender () {
+			this.renderLoadFunc(this);
 			this.isLoaded = true;
 		},
 		buildMap () {
 			this.gameBlock.style.width = this.scale.widthInCells * this.scale.cellSize + "px";
 			this.gameBlock.style.height = this.scale.heightInCells * this.scale.cellSize + "px";
 
-			if (!this.isLoaded) this.loadCanvas();
+			if (!this.isLoaded) this.loadRender();
 			loadFrame(this["bootstrap"]);
 
 			this.isBuilded = true;
@@ -58,7 +56,7 @@ function runFunc () {
 		start () {
 			if (this.isRunning) return;
 
-			if (!this.isLoaded) this.loadCanvas();
+			if (!this.isLoaded) this.loadRender();
 			if (!this.isBuilded) this.buildMap();
 
 			this.isRunning = true;	
@@ -95,8 +93,8 @@ function runFunc () {
 
 
 function loadFrame (containerSet) {
-	for (let canvasObj of containerSet.keys()) {
-		canvasObj["observer"]();
+	for (let renderObj of containerSet.keys()) {
+		renderObj["observer"]();
 	}
 }
 
@@ -110,8 +108,8 @@ function reloadGame () {
 	const enterHandler = evt => {
 		if ( evt.code !== "Enter" ) return;
 
-		this.gameBlock.classList.add 	("snake-game_outline-color_black");
-		this.gameBlock.classList.remove ("snake-game_outline-color_blue");
+		this.gameBlock.classList.add 	("game-block_outline-color_black");
+		this.gameBlock.classList.remove ("game-block_outline-color_blue");
 
 		this.buildMap();
 		document.removeEventListener("keydown", enterHandler);
@@ -121,8 +119,8 @@ function reloadGame () {
 }
 
 function winFunc (gameContainer) {
-	gameContainer.gameBlock.classList.remove 	("snake-game_outline-color_black");
-	gameContainer.gameBlock.classList.add 		("snake-game_outline-color_blue");
+	gameContainer.gameBlock.classList.remove 	("game-block_outline-color_black");
+	gameContainer.gameBlock.classList.add 		("game-block_outline-color_blue");
 }
 function gameOverFunc (gameContainer) {}
 

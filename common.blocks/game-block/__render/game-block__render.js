@@ -9,28 +9,28 @@ const layerObj = {
 
 export default function (container) {
 
-	const canvases = container.gameBlock.querySelectorAll(".game-block__render");
+	const renders = container.gameBlock.querySelectorAll(".game-block__render");
 
-	for (let canvas of canvases) {
+	for (let render of renders) {
 
-		const mod = canvas.className.split("_").at(-1);
+		const mod = render.className.split("_").at(-1);
 
-		const canvasObj = new GameCanvas(canvas);
-		canvasObj.setCanvasFunc		( layerObj [mod]			);
-		canvasObj.setCtxScaleParams	( container["scale"]		);
-		canvasObj.setGameStatus		( container["gameStatus"]	);
+		const renderObj = new GameRender(render);
+		renderObj.setRenderFunc		( layerObj [mod]			);
+		renderObj.setCtxScaleParams	( container["scale"]		);
+		renderObj.setGameStatus		( container["gameStatus"]	);
 
-		canvasObj.setWidth(container["scale"].width);
-		canvasObj.setHeight(container["scale"].height);
+		renderObj.setWidth(container["scale"].width);
+		renderObj.setHeight(container["scale"].height);
 
-		const typeOfSetArr = canvasSorter(mod);
+		const typeOfSetArr = renderSorter(mod);
 		for (let aSetType of typeOfSetArr) {
-			container[aSetType].add(canvasObj);
+			container[aSetType].add(renderObj);
 		}
 	}
 }
 
-function canvasSorter (modificator) {
+function renderSorter (modificator) {
 	const arrResult = [];
 
 	if (modificator === "main") {
@@ -43,7 +43,7 @@ function canvasSorter (modificator) {
 	return arrResult;
 }
 
-class GameCanvas {
+class GameRender {
 	constructor(canvas) {
 		this._canvas = canvas;
 		this._stateObj = {
@@ -59,8 +59,8 @@ class GameCanvas {
 		this.canvasFunc(this._stateObj);
 	}
 
-	canvasFunc (stateObj) {}
-	setCanvasFunc (func) {
+	renderFunc (stateObj) {}
+	setRenderFunc (func) {
 		this.canvasFunc = func;
 	}
 
