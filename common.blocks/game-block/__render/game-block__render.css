@@ -1,0 +1,10 @@
+@import "_layer/game-block__render_layer_main.css";
+@import "_layer/game-block__render_layer_back.css";
+
+.game-block__render {
+	display: block;
+	position: absolute;
+
+	width: 100%;
+	height: 100%;
+}

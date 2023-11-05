@@ -1,0 +1,9 @@
+@import "_outline-color/game-block_outline-color_black.css";
+@import "_outline-color/game-block_outline-color_blue.css";
+@import "__render/game-block__render.css";
+
+.game-block {
+	display: block;
+	position: relative;
+	margin: 0 auto;
+}

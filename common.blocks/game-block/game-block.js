@@ -1,4 +1,4 @@
-import snakeCanvas from "./__canvas/snake-game__canvas.js";
+import snakeCanvas from "./__render/game-block__render.js";
 
 
 function runFunc () {
@@ -18,7 +18,7 @@ function runFunc () {
 		},
 	};
 
-	const snakeGame = document.querySelector(".snake-game");
+	const snakeGame = document.querySelector(".game-block");
 
 	const gameContainer = {
 		bootstrap: new Set(),

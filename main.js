@@ -1,8 +1,8 @@
-import snakeGame from "./common.blocks/snake-game/snake-game.js"
+import gameBlock from "./common.blocks/game-block/game-block.js"
 
 
 let codeBlocks = [
-	snakeGame,
+	gameBlock,
 ];
 
 runBlocks(codeBlocks);

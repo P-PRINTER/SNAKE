@@ -1,5 +1,5 @@
-import mainLayerFunc from "./_layer/snake-game__canvas_layer_main.js";
-import backLayerFunc from "./_layer/snake-game__canvas_layer_back.js";
+import mainLayerFunc from "./_layer/game-block__render_layer_main.js";
+import backLayerFunc from "./_layer/game-block__render_layer_back.js";
 
 
 const layerObj = {
@@ -9,7 +9,7 @@ const layerObj = {
 
 export default function (container) {
 
-	const canvases = container.gameBlock.querySelectorAll(".snake-game__canvas");
+	const canvases = container.gameBlock.querySelectorAll(".game-block__render");
 
 	for (let canvas of canvases) {
 

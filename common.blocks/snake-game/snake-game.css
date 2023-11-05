@@ -1,9 +1,0 @@
-@import "_outline-color/snake-game_outline-color_black.css";
-@import "_outline-color/snake-game_outline-color_blue.css";
-@import "__canvas/snake-game__canvas.css";
-
-.snake-game {
-	display: block;
-	position: relative;
-	margin: 0 auto;
-}
