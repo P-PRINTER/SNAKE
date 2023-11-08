@@ -3,6 +3,12 @@ import renderOfGameBlock from "./__render/game-block__render.js";
 
 function runFunc () {
 
+	let gameBlocks =  document.querySelectorAll(".game-block");
+	gameBlocks.forEach( block => { loadGameBlock(block); } );
+}
+
+function loadGameBlock (block) {
+
 	const refreshTime = 120;
 
 	const scaleParams = {
@@ -23,9 +29,8 @@ function runFunc () {
 		repeatable: new Set(),
 
 		isRunning: false,
-		//isBootstrapLoaded: false,
 
-		gameBlock: document.querySelector(".game-block"),
+		gameBlock: block,
 		renderLoadFunc: renderOfGameBlock,
 		gameStatus: {
 			isWinned: false,
@@ -90,7 +95,6 @@ function runFunc () {
 
 	document.addEventListener( "keyup", _ => gameContainer.start(), {once: true} );
 }
-
 
 function loadFrame (containerSet) {
 	for (let renderObj of containerSet.keys()) {
