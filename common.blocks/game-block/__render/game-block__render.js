@@ -10,23 +10,24 @@ const layerObj = {
 export default function (container) {
 
 	const renders = container.gameBlock.querySelectorAll(".game-block__render");
+	renders.forEach( renderBlock => { loadRender(renderBlock, container); } );
+}
 
-	for (let render of renders) {
+function loadRender (block, container) {
 
-		const mod = render.className.split("_").at(-1);
+	const mod = block.className.split("_").at(-1);
 
-		const renderObj = new GameRender(render);
-		renderObj.setRenderFunc		( layerObj [mod]			);
-		renderObj.setCtxScaleParams	( container["scale"]		);
-		renderObj.setGameStatus		( container["gameStatus"]	);
+	const renderObj = new GameRender(block);
+	renderObj.setRenderFunc		( layerObj [mod]			);
+	renderObj.setCtxScaleParams	( container["scale"]		);
+	renderObj.setGameStatus		( container["gameStatus"]	);
 
-		renderObj.setWidth(container["scale"].width);
-		renderObj.setHeight(container["scale"].height);
+	renderObj.setWidth(container["scale"].width);
+	renderObj.setHeight(container["scale"].height);
 
-		const typeOfSetArr = renderSorter(mod);
-		for (let aSetType of typeOfSetArr) {
-			container[aSetType].add(renderObj);
-		}
+	const typeOfSetArr = renderSorter(mod);
+	for (let aSetType of typeOfSetArr) {
+		container[aSetType].add(renderObj);
 	}
 }
 
