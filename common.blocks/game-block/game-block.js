@@ -1,13 +1,13 @@
-import renderOfGameBlock from "./__render/game-block__render.js";
+import gameBlock__Render from "./__render/game-block__render.js";
 
 
 function runFunc () {
 
 	let gameBlocks =  document.querySelectorAll(".game-block");
-	gameBlocks.forEach( block => { loadGameBlock(block); } );
+	gameBlocks.forEach( DomBlock => { loadGameBlock(DomBlock); } );
 }
 
-function loadGameBlock (block) {
+function loadGameBlock (DomBlock) {
 
 	const refreshTime = 120;
 
@@ -25,44 +25,77 @@ function loadGameBlock (block) {
 	};
 
 	const gameContainer = {
-		bootstrap: new Set(),
-		repeatable: new Set(),
 
-		isRunning: false,
+		gameDomBlock: DomBlock,
+		renderControl: gameBlock__Render,
 
-		gameBlock: block,
-		renderLoadFunc: renderOfGameBlock,
-		gameStatus: {
-			isWinned: false,
-			gameOvered: false,
-			isStopped: false,
-		},
-
-		scale: scaleParams,
 		repeatTime: refreshTime,
 
-		isLoaded: false,
+		isRenderLoaded: false,
 		isBuilded: false,
 
-		loadRender () {
-			this.renderLoadFunc(this);
-			this.isLoaded = true;
-		},
-		buildMap () {
-			this.gameBlock.style.width = this.scale.widthInCells * this.scale.cellSize + "px";
-			this.gameBlock.style.height = this.scale.heightInCells * this.scale.cellSize + "px";
-
-			if (!this.isLoaded) this.loadRender();
-			loadFrame(this["bootstrap"]);
+		buildGameBlockSize () {
+			this.gameDomBlock.style.width 	= this.scale.widthInCells * this.scale.cellSize + "px";
+			this.gameDomBlock.style.height 	= this.scale.heightInCells * this.scale.cellSize + "px";
 
 			this.isBuilded = true;
 		},
+		
+		gameMap: {
+			width: scaleParams.widthInCells,
+			height: scaleParams.heightInCells,
+			layers: {
+				main: {
+					/*0: {
+						0: {
+							name: "snake",
+							id: "1",
+							localId: "0",
+							color: "red",
+							size: ["all", "all"],
+						},
+					},*/
+				},
+				back: {},
+			},
+		},
+
+		renderConfig: {
+			width: scaleParams["width"],
+			height: scaleParams["height"],
+			get cellSize () {
+				return this["width"] / gameMap["width"];
+			},
+		},
+
+		loadRender () {
+			this.renderControl.load(gameMap, scaleParams.cellSize);
+			this.isRenderLoaded = true;
+		},
+		startRender (num) {
+			this.renderControl.setRepeatTime(num);
+			this.renderControl.start(gameMap, renderConfig);
+			this.isRenderLoaded = true;
+		},
+		stopRender () {
+			renderControl.stop();
+		},
+
+
+		gameStatus: {
+			isWinned: false,
+			isGameOvered: false,
+			isStopped: false,
+			isRunning: false,
+		},
+
+		timerId: undefined;
 
 		start () {
 			if (this.isRunning) return;
 
 			if (!this.isLoaded) this.loadRender();
-			if (!this.isBuilded) this.buildMap();
+			if (!this.isBuilded) this.buildGameBlockSize();
 
 			this.isRunning = true;	
 			this.timerId = setInterval( _ => {
@@ -71,7 +104,7 @@ function loadGameBlock (block) {
 				loadFrame(this["repeatable"]);
 
 				if (this.gameStatus.isWinned) winFunc(this);
-				if (this.gameStatus.gameOvered) gameOverFunc(this);
+				if (this.gameStatus.isGameOvered) gameOverFunc(this);
 
 				if (this.gameStatus.isStopped) {
 					reloadGame.call(this);
@@ -82,8 +115,7 @@ function loadGameBlock (block) {
 			this.isRunning = false;
 			clearInterval(this.timerId);
 		},
-
-		play () {
+		unpause () {
 			this.isRunning = true;
 		},
 		pause () {
@@ -91,31 +123,26 @@ function loadGameBlock (block) {
 		},
 	};
 
-	gameContainer.buildMap();
+	gameContainer.buildGameBlockSize();
 
 	document.addEventListener( "keyup", _ => gameContainer.start(), {once: true} );
 }
 
-function loadFrame (containerSet) {
-	for (let renderObj of containerSet.keys()) {
-		renderObj["observer"]();
-	}
-}
 
 function reloadGame () {
 	this.stop();
 
-	if (this.gameStatus.isWinned)	this.gameStatus.isWinned = false;
-	if (this.gameStatus.gameOvered) this.gameStatus.gameOvered = false;
-	if (this.gameStatus.isStopped)	this.gameStatus.isStopped = false;
+	if (this.gameStatus.isWinned)		this.gameStatus.isWinned = false;
+	if (this.gameStatus.isGameOvered) 	this.gameStatus.isGameOvered = false;
+	if (this.gameStatus.isStopped)		this.gameStatus.isStopped = false;
 
 	const enterHandler = evt => {
 		if ( evt.code !== "Enter" ) return;
 
-		this.gameBlock.classList.add 	("game-block_outline-color_black");
-		this.gameBlock.classList.remove ("game-block_outline-color_blue");
+		this.gameDomBlock.classList.add 	("game-block_outline-color_black");
+		this.gameDomBlock.classList.remove ("game-block_outline-color_blue");
 
-		this.buildMap();
+		this.buildGameBlockSize();
 		document.removeEventListener("keydown", enterHandler);
 		document.addEventListener( "keydown", _ => this.start(), {once: true} );
 	};
@@ -123,8 +150,8 @@ function reloadGame () {
 }
 
 function winFunc (gameContainer) {
-	gameContainer.gameBlock.classList.remove 	("game-block_outline-color_black");
-	gameContainer.gameBlock.classList.add 		("game-block_outline-color_blue");
+	gameContainer.gameDomBlock.classList.remove 	("game-block_outline-color_black");
+	gameContainer.gameDomBlock.classList.add 		("game-block_outline-color_blue");
 }
 function gameOverFunc (gameContainer) {}
 
