@@ -27,7 +27,6 @@ function loadGameBlock (DomBlock) {
 	const gameContainer = {
 
 		gameDomBlock: DomBlock,
-		// changed
 		renderControl: gameBlock__Render(this.gameDomBlock),
 
 		repeatTime: refreshTime,
@@ -74,7 +73,6 @@ function loadGameBlock (DomBlock) {
 			this.renderControl.start(this.gameMap, this.renderConfig);
 			this.isRenderLoaded = true;
 		},
-		// fixed
 		stopRender () {
 			this.renderControl.stop();
 		},

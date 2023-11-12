@@ -7,12 +7,9 @@ const layerObj = {
 	"back": backLayerFunc,
 };
 
-// changed
 export default function (graphicBlock) {
 
-	// renamed
 	const DomRenders = graphicBlock.querySelectorAll(".game-block__render");
-	// renamed and changed
 	const renderObjs = DomRenders.map( renderBlock => {
 		loadRender(renderBlock, graphicMap, renderConfig);
 	} );
@@ -49,7 +46,6 @@ export default function (graphicBlock) {
 	return renderObj;
 }
 
-// changed
 function loadRender (block, graphicMap, renderConfig) {
 
 	const renderObj = new GameRender(block);
@@ -63,8 +59,6 @@ function loadRender (block, graphicMap, renderConfig) {
 	return renderObj;
 }
 
-// deleted renderSorter(modificator)
-
 
 class GameRender {
 	constructor(canvas) {
@@ -72,14 +66,10 @@ class GameRender {
 		this._context = canvas.getContext("2d");
 	}
 
-	// deleted observer()
-	// deleted renderFunc(stateObj)
-
 	_canvasFunc		= undefined;
 	_graphicMap		= undefined;
 	_renderConfig	= undefined;
 
-	// added render()
 	render () {
 		this._canvasFunc(this._graphicMap, this._renderConfig);
 	}
@@ -87,28 +77,21 @@ class GameRender {
 	setRenderFunc (func) {
 		this._canvasFunc = func;
 	}
-	// added
 	setGraphicMap (obj) {
 		this._graphicMap = obj;
 	}
-	// added
 	serRenderConfig	(obj) {
 		this._renderConfig = obj;
 	}
 
-	// added
 	buildCorrectWindowSize () {
 		this._canvas["width"]	= this._renderConfig["width"];
 		this._canvas["height"]	= this._renderConfig["height"];
 	}
-	// renamed to setWindowWidth
 	setWindowWidth (numValue) {
 		this._canvas["width"] = numValue;
 	}
-	// renamed to setWindowHeight
 	setWindowHeight (numValue) {
 		this._canvas["height"] = numValue;
 	}
-	// deleted setCtxScaleParams(obj)
-	// deleted setGameStatus(obj)
 }
