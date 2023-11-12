@@ -27,7 +27,8 @@ function loadGameBlock (DomBlock) {
 	const gameContainer = {
 
 		gameDomBlock: DomBlock,
-		renderControl: gameBlock__Render,
+		// changed
+		renderControl: gameBlock__Render(this.gameDomBlock),
 
 		repeatTime: refreshTime,
 
@@ -68,17 +69,14 @@ function loadGameBlock (DomBlock) {
 			},
 		},
 
-		loadRender () {
-			this.renderControl.load(gameMap, scaleParams.cellSize);
-			this.isRenderLoaded = true;
-		},
 		startRender (num) {
 			this.renderControl.setRepeatTime(num);
-			this.renderControl.start(gameMap, renderConfig);
+			this.renderControl.start(this.gameMap, this.renderConfig);
 			this.isRenderLoaded = true;
 		},
+		// fixed
 		stopRender () {
-			renderControl.stop();
+			this.renderControl.stop();
 		},
 
 

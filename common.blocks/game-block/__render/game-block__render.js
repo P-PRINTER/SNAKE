@@ -7,74 +7,108 @@ const layerObj = {
 	"back": backLayerFunc,
 };
 
-export default function (container) {
+// changed
+export default function (graphicBlock) {
 
-	const renders = container.gameBlock.querySelectorAll(".game-block__render");
-	renders.forEach( renderBlock => { loadRender(renderBlock, container); } );
+	// renamed
+	const DomRenders = graphicBlock.querySelectorAll(".game-block__render");
+	// renamed and changed
+	const renderObjs = DomRenders.map( renderBlock => {
+		loadRender(renderBlock, graphicMap, renderConfig);
+	} );
+
+	const renderObj = {
+		start (graphicMap, renderConfig, repeatTime = 42) {
+			if (!this._repeatTime) this._repeatTime = repeatTime;
+
+			this.timerId = setInterval( _ => {
+				if (this._isRepeatTimeChanged) {
+					this._isRepeatTimeChanged = false;
+
+					this.stop();
+					this.start(graphicMap, renderConfig);
+
+					return;
+				}
+
+				renderObjs.forEach( renderObj => {
+					renderObj.render();
+				} );
+			} , this._repeatTime);
+		},
+		stop () {
+			clearInterval(this.timerId);
+		},
+
+		setRepeatTime (num) {
+			this._repeatTime = num;
+			this._isRepeatTimeChanged = true;
+		}
+	};
+
+	return renderObj;
 }
 
-function loadRender (block, container) {
-
-	const mod = block.className.split("_").at(-1);
+// changed
+function loadRender (block, graphicMap, renderConfig) {
 
 	const renderObj = new GameRender(block);
-	renderObj.setRenderFunc		( layerObj [mod]			);
-	renderObj.setCtxScaleParams	( container["scale"]		);
-	renderObj.setGameStatus		( container["gameStatus"]	);
+	const mod = block.className.split("_").at(-1);
 
-	renderObj.setWidth(container["scale"].width);
-	renderObj.setHeight(container["scale"].height);
+	renderObj.setRenderFunc		(layerObj[mod]);
+	renderObj.setGraphicMap		(graphicMap);
+	renderObj.serRenderConfig	(renderConfig);
+	renderObj.buildCorrectWindowSize ();
 
-	const typeOfSetArr = renderSorter(mod);
-	for (let aSetType of typeOfSetArr) {
-		container[aSetType].add(renderObj);
-	}
+	return renderObj;
 }
 
-function renderSorter (modificator) {
-	const arrResult = [];
+// deleted renderSorter(modificator)
 
-	if (modificator === "main") {
-		arrResult.push("bootstrap");
-		arrResult.push("repeatable");
-	} else if (modificator === "back") {
-		arrResult.push("bootstrap");
-	}
-
-	return arrResult;
-}
 
 class GameRender {
 	constructor(canvas) {
 		this._canvas = canvas;
-		this._stateObj = {
-			context: canvas.getContext("2d"),
-			isBootstrapped: false,
-			cache: {},
-			gameStatus: {},
-			developMode: false,
-		};
+		this._context = canvas.getContext("2d");
 	}
 
-	observer () {
-		this.canvasFunc(this._stateObj);
+	// deleted observer()
+	// deleted renderFunc(stateObj)
+
+	_canvasFunc		= undefined;
+	_graphicMap		= undefined;
+	_renderConfig	= undefined;
+
+	// added render()
+	render () {
+		this._canvasFunc(this._graphicMap, this._renderConfig);
 	}
 
-	renderFunc (stateObj) {}
 	setRenderFunc (func) {
-		this.canvasFunc = func;
+		this._canvasFunc = func;
+	}
+	// added
+	setGraphicMap (obj) {
+		this._graphicMap = obj;
+	}
+	// added
+	serRenderConfig	(obj) {
+		this._renderConfig = obj;
 	}
 
-	setWidth (numValue) {
+	// added
+	buildCorrectWindowSize () {
+		this._canvas["width"]	= this._renderConfig["width"];
+		this._canvas["height"]	= this._renderConfig["height"];
+	}
+	// renamed to setWindowWidth
+	setWindowWidth (numValue) {
 		this._canvas["width"] = numValue;
 	}
-	setHeight (numValue) {
+	// renamed to setWindowHeight
+	setWindowHeight (numValue) {
 		this._canvas["height"] = numValue;
 	}
-	setCtxScaleParams(obj) {
-		this._stateObj["scaleParams"] = obj;
-	}
-	setGameStatus(obj) {
-		this._stateObj["gameStatus"] = obj;
-	}
+	// deleted setCtxScaleParams(obj)
+	// deleted setGameStatus(obj)
 }
