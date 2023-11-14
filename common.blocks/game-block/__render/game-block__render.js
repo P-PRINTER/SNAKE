@@ -3,7 +3,7 @@ import backLayerFunc from "./_layer/game-block__render_layer_back.js";
 
 
 export default function (graphicBlock) {
-	console.log("render");
+	
 	const DomRenders = graphicBlock.querySelectorAll(".game-block__render");
 	const renderObjs = DomRenders.map( renderBlock => {
 		loadRender(renderBlock, graphicMap, renderConfig);

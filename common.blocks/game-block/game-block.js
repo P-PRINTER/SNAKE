@@ -138,15 +138,12 @@ function loadGameBlock (DomBlock) {
 
 		start () {
 			if (this.isRunning) return;
+			this.isRunning = true;
 
-			if (!this.isLoaded) this.loadRender();
-			if (!this.isBuilded) this.buildGameBlockSize();
-
-			this.isRunning = true;	
 			this._timerId = setInterval( _ => {
 				if (!this.isRunning) return;
 
-				loadFrame(this["repeatable"]);
+				this.startRender();
 
 				if (this.gameStatus.isWinned) winFunc(this);
 				if (this.gameStatus.isGameOvered) gameOverFunc(this);
