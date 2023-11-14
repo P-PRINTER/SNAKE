@@ -2,29 +2,33 @@ import mainLayerFunc from "./_layer/game-block__render_layer_main.js";
 import backLayerFunc from "./_layer/game-block__render_layer_back.js";
 
 
-export default function (graphicBlock) {
+export default function (container_obj) {
+
+	const block 		= container_obj["gameDomBlock"];
+	const graphicMap 	= container_obj["gameMap"];
+	const renderConfig 	= container_obj["renderConfig"];
 	
-	const DomRenders = graphicBlock.querySelectorAll(".game-block__render");
-	const renderObjs = DomRenders.map( renderBlock => {
-		loadRender(renderBlock, graphicMap, renderConfig);
+	const DomRenders = block.querySelectorAll(".game-block__render");
+	const renderObjs = Array.from(DomRenders).map( renderBlock => {
+		return loadRender(renderBlock, graphicMap, renderConfig);
 	} );
 
-	const renderObj = {
+	const renderContainer = {
 		start (graphicMap, renderConfig, repeatTime) {
-
+			
 			this._timerId = setInterval( _ => {
+
+				renderObjs.forEach( renderObj => {
+					renderObj.render();
+				} );
+
 				if (this._isRepeatTimeChanged) {
 					this._isRepeatTimeChanged = false;
 
 					this.stop();
 					this.start(graphicMap, renderConfig);
-
 					return;
 				}
-
-				renderObjs.forEach( renderObj => {
-					renderObj.render();
-				} );
 			} , this._repeatTime);
 		},
 		stop () {
@@ -37,7 +41,7 @@ export default function (graphicBlock) {
 		}
 	};
 
-	return renderObj;
+	return renderContainer;
 }
 
 const layerObj = {
@@ -52,7 +56,7 @@ function loadRender (block, graphicMap, renderConfig) {
 
 	renderObj.setRenderFunc		(layerObj[mod]);
 	renderObj.setGraphicMap		(graphicMap);
-	renderObj.serRenderConfig	(renderConfig);
+	renderObj.setRenderConfig	(renderConfig);
 	renderObj.buildCorrectWindowSize ();
 
 	return renderObj;
@@ -70,7 +74,7 @@ class GameRender {
 	_renderConfig	= undefined;
 
 	render () {
-		this._canvasFunc(this._graphicMap, this._renderConfig);
+		this._canvasFunc(this._context, this._graphicMap, this._renderConfig);
 	}
 
 	setRenderFunc (func) {
@@ -79,7 +83,7 @@ class GameRender {
 	setGraphicMap (obj) {
 		this._graphicMap = obj;
 	}
-	serRenderConfig	(obj) {
+	setRenderConfig	(obj) {
 		this._renderConfig = obj;
 	}
 

@@ -33,7 +33,8 @@ function loadGameBlock (DomBlock) {
 
 		gameDomBlock: DomBlock,
 		get renderControl () {
-			return gameBlock__Render(this.gameDomBlock);
+			if (!this._renderControl) this._renderControl = gameBlock__Render(this);
+			return this._renderControl;
 		},
 
 		repeatTime: refreshTime,
@@ -140,10 +141,10 @@ function loadGameBlock (DomBlock) {
 			if (this.isRunning) return;
 			this.isRunning = true;
 
+			this.startRender();
+
 			this._timerId = setInterval( _ => {
 				if (!this.isRunning) return;
-
-				this.startRender();
 
 				if (this.gameStatus.isWinned) winFunc(this);
 				if (this.gameStatus.isGameOvered) gameOverFunc(this);
@@ -200,20 +201,20 @@ function gameOverFunc (gameContainer) {}
 
 function createLayerIteratorFunc () {
 	return function iteratorFunc () {
-		let itemsArr = this._items.values();
+		let itemsArr = Object.values(this._items);
 		let curInd = 0;
-		let finInd = itemsArr.length;
+		let finInd = itemsArr.length -1;
 
 		return {
 			next () {
 				let result;
 
 				if (curInd <= finInd) {
-					result = {done: false, val: itemsArr[curInd]}
+					result = {done: false, value: itemsArr[curInd++]}
 				} else {
 					result = {done: true}
 				}
-
+				
 				return result;
 			}
 		};
