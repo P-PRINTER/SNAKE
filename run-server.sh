@@ -7,7 +7,7 @@ fi
 
 if [ -e ./server.js ]
 then
-	node ./server.js > ./logs.txt
+	node ./server.js > ./run-server.log
 else
 	echo "You need to open the SNAKE directory and run this command from there again"
 fi
