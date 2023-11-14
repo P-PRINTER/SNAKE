@@ -1,15 +1,23 @@
-export default function draw (context, graphicMap, renderConfig) {
-	const layer = graphicMap.layers["back"];
+export default function renderFrame (context, graphicMap, renderConfig) {
+	const mod = "back";
+	const layer = graphicMap.layers[mod];
 
-	if (layer["blockUpdate"]) return;
-	if (layer["once"]) layer["blockUpdate"] = true;
+	if (!layer["needUpdate"]) return;
+	if (layer["once"]) layer["needUpdate"] = false;
 
-	context.clearRect(0, 0, renderConfig["width"], renderConfig["height"]);
+	draw(context, graphicMap, renderConfig, mod);
+}
 
-	for (let item of layer) {
-		
-		const itemWidth		= item["size"][0] === 'full' ? renderConfig["width"] : item["size"][0] * renderConfig.cellSize;
-		const itemHeight	= item["size"][1] === 'full' ? renderConfig["height"] : item["size"][1] * renderConfig.cellSize;
+function draw (context, graphicMap, renderConfig, mod) {
+
+	for (let item of graphicMap.layers[mod]) {
+
+		const itemWidth		= item["size"][0] === 'full'
+			? renderConfig["width"]
+			: item["size"][0] * renderConfig.cellSize;
+		const itemHeight	= item["size"][1] === 'full'
+			? renderConfig["height"]
+			: item["size"][1] * renderConfig.cellSize;
 		const posX			= item["pos"][0];
 		const posY			= item["pos"][1];
 

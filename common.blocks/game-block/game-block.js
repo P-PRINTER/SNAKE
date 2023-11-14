@@ -56,6 +56,28 @@ function loadGameBlock (DomBlock) {
 				main: {
 					[Symbol.iterator]: createLayerIteratorFunc(),
 
+					needUpdate: true,
+
+					setItem (item_obj) {
+						++this._maxMapId
+						itemObj["localId"] = this._maxMapId;
+						return this._items[this._maxMapId] = itemObj;
+					},
+					getItem (mapId_num) {
+						return this._items[localId_num];
+					},
+					rmItem (mapId_num) {
+						delete this._items[localId_num];
+
+						if ( !(mapId_num === this._maxMapId) ) return;
+						this._maxMapId = this._items["keys"].at(-1);
+					},
+					forEach (func) {
+						for (let item in this._items) {
+							func(item);
+						}
+					},
+
 					_maxMapId: null,
 					_items: {	
 						/*
@@ -74,7 +96,7 @@ function loadGameBlock (DomBlock) {
 					[Symbol.iterator]: createLayerIteratorFunc(),
 
 					once: true,
-					blockUpdate: false,
+					needUpdate: true,
 
 					setItem (item_obj) {
 						++this._maxMapId
@@ -141,8 +163,6 @@ function loadGameBlock (DomBlock) {
 			if (this.isRunning) return;
 			this.isRunning = true;
 
-			this.startRender();
-
 			this._timerId = setInterval( _ => {
 				if (!this.isRunning) return;
 
@@ -168,6 +188,7 @@ function loadGameBlock (DomBlock) {
 
 	gameContainer.buildGameBlockSize();
 
+	gameContainer.startRender();
 	document.addEventListener( "keyup", _ => gameContainer.start(), {once: true} );
 }
 
@@ -214,7 +235,7 @@ function createLayerIteratorFunc () {
 				} else {
 					result = {done: true}
 				}
-				
+
 				return result;
 			}
 		};

@@ -16,7 +16,7 @@ export default function (container_obj) {
 	const renderContainer = {
 		start (graphicMap, renderConfig, repeatTime) {
 			
-			this._timerId = setInterval( _ => {
+			this._timerId = setInterval( async _ => {
 
 				renderObjs.forEach( renderObj => {
 					renderObj.render();
