@@ -2,23 +2,17 @@ import mainLayerFunc from "./_layer/game-block__render_layer_main.js";
 import backLayerFunc from "./_layer/game-block__render_layer_back.js";
 
 
-const layerObj = {
-	"main": mainLayerFunc,
-	"back": backLayerFunc,
-};
-
 export default function (graphicBlock) {
-
+	console.log("render");
 	const DomRenders = graphicBlock.querySelectorAll(".game-block__render");
 	const renderObjs = DomRenders.map( renderBlock => {
 		loadRender(renderBlock, graphicMap, renderConfig);
 	} );
 
 	const renderObj = {
-		start (graphicMap, renderConfig, repeatTime = 42) {
-			if (!this._repeatTime) this._repeatTime = repeatTime;
+		start (graphicMap, renderConfig, repeatTime) {
 
-			this.timerId = setInterval( _ => {
+			this._timerId = setInterval( _ => {
 				if (this._isRepeatTimeChanged) {
 					this._isRepeatTimeChanged = false;
 
@@ -34,7 +28,7 @@ export default function (graphicBlock) {
 			} , this._repeatTime);
 		},
 		stop () {
-			clearInterval(this.timerId);
+			clearInterval(this._timerId);
 		},
 
 		setRepeatTime (num) {
@@ -45,6 +39,11 @@ export default function (graphicBlock) {
 
 	return renderObj;
 }
+
+const layerObj = {
+	"main": mainLayerFunc,
+	"back": backLayerFunc,
+};
 
 function loadRender (block, graphicMap, renderConfig) {
 

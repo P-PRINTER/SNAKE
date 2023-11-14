@@ -1,6 +1,11 @@
 import gameBlock__Render from "./__render/game-block__render.js";
 
 
+export default {
+	run: runFunc,
+}
+
+
 function runFunc () {
 
 	let gameBlocks =  document.querySelectorAll(".game-block");
@@ -27,7 +32,9 @@ function loadGameBlock (DomBlock) {
 	const gameContainer = {
 
 		gameDomBlock: DomBlock,
-		renderControl: gameBlock__Render(this.gameDomBlock),
+		get renderControl () {
+			return gameBlock__Render(this.gameDomBlock);
+		},
 
 		repeatTime: refreshTime,
 
@@ -35,8 +42,8 @@ function loadGameBlock (DomBlock) {
 		isBuilded: false,
 
 		buildGameBlockSize () {
-			this.gameDomBlock.style.width 	= this.scale.widthInCells * this.scale.cellSize + "px";
-			this.gameDomBlock.style.height 	= this.scale.heightInCells * this.scale.cellSize + "px";
+			this.gameDomBlock.style.width 	= scaleParams["widthInCells"] * scaleParams["cellSize"] + "px";
+			this.gameDomBlock.style.height 	= scaleParams["heightInCells"] * scaleParams["cellSize"] + "px";
 
 			this.isBuilded = true;
 		},
@@ -46,17 +53,59 @@ function loadGameBlock (DomBlock) {
 			height: scaleParams.heightInCells,
 			layers: {
 				main: {
-					/*0: {
-						0: {
-							name: "snake",
-							id: "1",
-							localId: "0",
+					[Symbol.iterator]: createLayerIteratorFunc(),
+
+					_maxMapId: null,
+					_items: {	
+						/*
+						1: {
+							name: "apple",
+							pos: [10, 5],
+							id: 3,
+							mapId: 1,
 							color: "red",
-							size: ["all", "all"],
+							size: [1, 1],
 						},
-					},*/
+						*/
+					},
 				},
-				back: {},
+				back: {
+					[Symbol.iterator]: createLayerIteratorFunc(),
+
+					once: true,
+					blockUpdate: false,
+
+					setItem (item_obj) {
+						++this._maxMapId
+						itemObj["localId"] = this._maxMapId;
+						return this._items[this._maxMapId] = itemObj;
+					},
+					getItem (mapId_num) {
+						return this._items[localId_num];
+					},
+					rmItem (mapId_num) {
+						delete this._items[localId_num];
+
+						if ( !(mapId_num === this._maxMapId) ) return;
+						this._maxMapId = this._items["keys"].at(-1);
+					},
+					forEach (func) {
+						for (let item in this._items) {
+							func(item);
+						}
+					},
+					_maxMapId: 1,
+					_items: {
+						1: {
+							name: "black_background",
+							pos: [0, 0],
+							id: "1",
+							mapId: 1,
+							color: '#000',
+							size: ['full', 'full'],
+						},
+					},
+				},
 			},
 		},
 
@@ -68,7 +117,7 @@ function loadGameBlock (DomBlock) {
 			},
 		},
 
-		startRender (num) {
+		startRender (num = 42) {
 			this.renderControl.setRepeatTime(num);
 			this.renderControl.start(this.gameMap, this.renderConfig);
 			this.isRenderLoaded = true;
@@ -85,7 +134,7 @@ function loadGameBlock (DomBlock) {
 			isRunning: false,
 		},
 
-		timerId: undefined;
+		_timerId: undefined,
 
 		start () {
 			if (this.isRunning) return;
@@ -94,7 +143,7 @@ function loadGameBlock (DomBlock) {
 			if (!this.isBuilded) this.buildGameBlockSize();
 
 			this.isRunning = true;	
-			this.timerId = setInterval( _ => {
+			this._timerId = setInterval( _ => {
 				if (!this.isRunning) return;
 
 				loadFrame(this["repeatable"]);
@@ -109,7 +158,7 @@ function loadGameBlock (DomBlock) {
 		},
 		stop () {
 			this.isRunning = false;
-			clearInterval(this.timerId);
+			clearInterval(this._timerId);
 		},
 		unpause () {
 			this.isRunning = true;
@@ -152,7 +201,24 @@ function winFunc (gameContainer) {
 function gameOverFunc (gameContainer) {}
 
 
-export default {
-	run: runFunc,
-}
+function createLayerIteratorFunc () {
+	return function iteratorFunc () {
+		let itemsArr = this._items.values();
+		let curInd = 0;
+		let finInd = itemsArr.length;
 
+		return {
+			next () {
+				let result;
+
+				if (curInd <= finInd) {
+					result = {done: false, val: itemsArr[curInd]}
+				} else {
+					result = {done: true}
+				}
+
+				return result;
+			}
+		};
+	};
+}
