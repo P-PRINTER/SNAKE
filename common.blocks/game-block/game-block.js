@@ -1,4 +1,5 @@
 import gameBlock__Render from "./__render/game-block__render.js";
+import gameBlock_Snake from "./_snake/game-block_snake.js";
 
 
 export default {
@@ -35,6 +36,10 @@ function loadGameBlock (DomBlock) {
 		get renderControl () {
 			if (!this._renderControl) this._renderControl = gameBlock__Render(this);
 			return this._renderControl;
+		},
+		get gameObj () {
+			if (!this._gameObj) this._gameObj = new gameBlock_Snake(this.gameMap);
+			return this._gameObj;
 		},
 
 		repeatTime: refreshTime,
@@ -166,6 +171,8 @@ function loadGameBlock (DomBlock) {
 			this._timerId = setInterval( _ => {
 				if (!this.isRunning) return;
 
+				this.gameObj.doStep();
+
 				if (this.gameStatus.isWinned) winFunc(this);
 				if (this.gameStatus.isGameOvered) gameOverFunc(this);
 
@@ -188,6 +195,7 @@ function loadGameBlock (DomBlock) {
 
 	gameContainer.buildGameBlockSize();
 
+	gameContainer.gameObj.init();
 	gameContainer.startRender();
 	document.addEventListener( "keyup", _ => gameContainer.start(), {once: true} );
 }

@@ -1,4 +1,4 @@
-export default function (stateObj) {
+export default function (map) {
 	if (!stateObj.isBootstrapped)	bootstrapFunc(stateObj);
 	else 							doStep(stateObj);
 
