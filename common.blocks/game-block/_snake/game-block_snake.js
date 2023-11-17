@@ -1,200 +1,317 @@
-export default function (map) {
-	if (!stateObj.isBootstrapped)	bootstrapFunc(stateObj);
-	else 							doStep(stateObj);
-
-	render(stateObj);
-}
-
-function sendWinSignal (gameStatus) {
-	sendStopSignal(gameStatus);
-	gameStatus.isWinned = true;
-}
-function sendGameOverSignal (gameStatus) {
-	sendStopSignal(gameStatus);
-	gameStatus.gameOvered = true;
-}
-function sendStopSignal (gameStatus) {
-	gameStatus.isStopped = true;
-}
-
-function bootstrapFunc (stateObj) {
-
-	const size = 4;
-	const body = new Array(size);
-
-	// needing change from array to linked list
-	for (let i = 0; i < size; i++) {
-		body[i] = [
-			Math.floor(stateObj["scaleParams"].widthInCells / 1.5) - size + i,
-			Math.floor(stateObj["scaleParams"].heightInCells / 2),
-		];
+export default class SnakeGame {
+	construnctor (gameStatus_obj) {
+		this._gameStatus = gameStatus_obj;
 	}
 
-	stateObj["snake"] = new SnakeBody(body);
+	_snake = undefined;
+	_gameMap = undefined;
+	_lastKeydown = undefined;
+	_directObj = new Directs_2d();
 
-	const directValue = stateObj["snake"].getDirectByDescript("LEFT");
-	stateObj["snake"].setDirect( directValue );
+	buildGameMap () {
+		const main = this._gameMap.layers["main"];
+		main.clear();
 
-	// event to change direction
-	document.addEventListener("keydown", evt => {
-		let nextDirect;
+		let isHeadBuilded = false;
+		this._snake.forEach( bodyPart => {
+			let mapPart;
+			if (!isHeadBuilded) {
+				mapPart = takeHeadTemplate();
+				mapPart.setPos( ...this._snake.getHead() );
 
-		switch (evt.code) {
-			case "ArrowUp":
-				nextDirect = stateObj["snake"].getDirectByDescript("TOP");
-				break;
-			case "ArrowLeft":
-				nextDirect = stateObj["snake"].getDirectByDescript("LEFT");
-				break;
-			case "ArrowDown":
-				nextDirect = stateObj["snake"].getDirectByDescript("BOTTOM");
-				break;
-			case "ArrowRight":
-				nextDirect = stateObj["snake"].getDirectByDescript("RIGHT");
-				break;
-		}
-		if (nextDirect) stateObj["cache"].direct = nextDirect;
-	});
-
-	createApple(stateObj);
-
-
-	stateObj.isBootstrapped = true;
-}
-
-
-function doStep (stateObj) {
-
-	changeDirect(stateObj);
-	stateObj["snake"].isEated() && createApple(stateObj);
-
-	const walls 		= detectWalls(stateObj);
-	const appleDirect 	= detectApple(stateObj);
-
-	stateObj["snake"].move(walls, appleDirect);
-
-
-	if ( stateObj["snake"].getSize() ===
-		stateObj["scaleParams"].widthInCells * stateObj["scaleParams"].heightInCells
-	) {
-		sendWinSignal( stateObj["gameStatus"] );
-		stateObj.isBootstrapped = false;
-	}
-
-	if ( stateObj["snake"].isDead() ) {
-		sendGameOverSignal( stateObj["gameStatus"] )
-		stateObj.isBootstrapped = false;
-	}
-}
-
-function changeDirect (stateObj) {
-
-	const nextDirect = stateObj["cache"].direct;
-	stateObj["cache"].direct = undefined;
-
-	nextDirect && stateObj["snake"].setDirect(nextDirect);
-}
-
-function detectWalls (stateObj) {
-	let walls = [];
-
-	const TOP 		= stateObj["snake"].getDirectByDescript("TOP");
-	const LEFT 		= stateObj["snake"].getDirectByDescript("LEFT");
-	const BOTTOM 	= stateObj["snake"].getDirectByDescript("BOTTOM");
-	const RIGHT		= stateObj["snake"].getDirectByDescript("RIGHT");
-
-	const head = stateObj["snake"].getHead();
-	const visibleZone = stateObj["snake"].getVisibleZone();
-
-
-	if 	(head[0] === 0) {
-		walls.push(LEFT);
-	}
-	if 	(head[1] === 0) {
-		walls.push(TOP);
-	}
-	if 	(head[0] === stateObj["scaleParams"].widthInCells -1) {
-		walls.push(RIGHT);
-	}
-	if 	(head[1] === stateObj["scaleParams"].heightInCells -1) {
-		walls.push(BOTTOM);
-	}
-
-	for (let side of visibleZone) {
-
-		const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
-		const sideCoords = [
-			head[0] + sideCoef[0],
-			head[1] + sideCoef[1],
-		];
-
-		stateObj["snake"].bodyTraversal( bodyPart => {
-
-			if (bodyPart[0] === sideCoords[0] && bodyPart[1] === sideCoords[1]) {
-				walls.push(side);
+				main.setItem(mapPart);
+				isHeadBuilded = true;
+				return;
 			}
+
+			mapPart = takeBodyPartTemplate();
+			mapPart.setPos(...bodyPart);
+
+			main.setItem(mapPart);
 		} );
+
+		const apple = takeAppleTemplate();
+		apple.setPos( ...this.getApplePos() );
+
+		main.setItem(apple);
 	}
+	detectWallOnPos (pos_arr) {
+		let result_bool = false;
 
-	return walls;
-}
-function detectApple (stateObj) {
-	let appleDirect;
-
-	const head = stateObj["snake"].getHead();
-	const apple = stateObj["apple"];
-	const visibleZone = stateObj["snake"].getVisibleZone();
-
-	for (let side of visibleZone) {
-
-		const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
-		const sideCoords = [
-			head[0] + sideCoef[0],
-			head[1] + sideCoef[1],
-		];
-
-
-		if (apple[0] === sideCoords[0] && apple[1] === sideCoords[1]) {
-			appleDirect = side;
+		if 	(pos_arr[0] === 0) {
+			result_bool = true;
 		}
+		else if (pos_arr[0] === this._gameMap["width"] -1) {
+			result_bool = true;
+		}
+		if 	(pos_arr[1] === 0) {
+			result_bool = true;
+		}
+		else if (pos_arr[1] === this._gameMap["height"] -1) {
+			result_bool = true;
+		}
+
+		return result_bool;
+	}
+	detectAppleOnPos (pos_arr) {
+		result_bool = false;
+
+		if (pos_arr[0] === this._apple[0] && pos_arr[1] === this._apple[1]) {
+			result_bool = true;
+		}
+
+		return result_bool;
 	}
 
-	return appleDirect;
-}
+	init (gameMap_obj) {
+		this._gameMap = gameMap_obj;
 
-function createApple (stateObj) {
+		const size = 4;
+		const bodyArr = new Array(size);
 
-	let x,
-		y;
+		// needing change from array to linked list
+		for (let i = 0; i < size; i++) {
+			bodyArr[i] = [
+				Math.floor(this._gameMap["width"] / 1.5) - size + i,
+				Math.floor(this._gameMap["height"] / 2),
+			];
+		}
 
+		const directValue = this._directObj.getDirectByDescript("LEFT");
 
-	let isFreePlace;
-	do {
+		this._snake = new SnakeBody(bodyArr);
+		this._snake.setDirectObj(this._directObj);
+		this._snake.setDirect(directValue);
 
-		isFreePlace = true;
+		// event to change direction
+		document.addEventListener("keydown", evt => {
+			let nextDirect;
 
-		x = Math.floor(Math.random() * stateObj["scaleParams"].widthInCells);
-		y = Math.floor(Math.random() * stateObj["scaleParams"].heightInCells);
-
-		stateObj["snake"].bodyTraversal( bodyPart => {
-
-			if (x === bodyPart[0] && y === bodyPart[1]) {
-				isFreePlace = false;
+			switch (evt.code) {
+				case "ArrowUp":
+					nextDirect = this._directObj.getDirectByDescript("TOP");
+					break;
+				case "ArrowLeft":
+					nextDirect = this._directObj.getDirectByDescript("LEFT");
+					break;
+				case "ArrowDown":
+					nextDirect = this._directObj.getDirectByDescript("BOTTOM");
+					break;
+				case "ArrowRight":
+					nextDirect = this._directObj.getDirectByDescript("RIGHT");
+					break;
 			}
-		} );
-	} while (!isFreePlace);
+			if (nextDirect) this._lastKeydown = nextDirect;
+		});
 
-	stateObj["apple"] = [x, y];
-	stateObj["snake"].setHungry();
+		this.createApple();
+
+		this.buildGameMap();
+	}
+
+	doStep () {
+		changeDirect.call(this);
+
+		this._snake.checkHungry() && this.createApple();
+
+		const headPos = this._snake.getHead();
+		const visionSides = this._snake.getVisionSides();
+		const itemList = this._snake.getKnownItems();
+
+		const availableItems = [];
+		for (let side of visionSides) {
+			const pos = new Array(2);
+			pos[0] = headPos[0] + this._directObj.getCode(side)[0];
+			pos[1] = headPos[1] + this._directObj.getCode(side)[1];
+
+			if ( this.detectAppleOnPos(pos) ) {
+				availableItems.push( itemList["FOOD"] );
+			} else if ( this.detectWallOnPos(pos) ) {
+				availableItems.push( itemList["WALL"] );
+			}
+		}
+
+		this._snake.setItemsInSight(availableItems);
+		this._snake.move();
+
+
+		if ( this._snake.getSize() ===
+			this._gameMap["width"] * this._gameMap["height"]
+		) {
+			this.sendWinSignal();
+		}
+		if ( this._snake.checkDeath() ) {
+			this.sendGameOverSignal();
+		}
+
+		this.buildGameMap();
+	}
+
+	_apple = undefined;
+	createApple () {
+
+		let x,
+			y;
+
+
+		let isFreePlace;
+		do {
+
+			isFreePlace = true;
+
+			x = Math.floor(Math.random() * this._gameMap["width"]);
+			y = Math.floor(Math.random() * this._gameMap["height"]);
+
+			this._snake.forEach( bodyPart => {
+
+				if (x === bodyPart[0] && y === bodyPart[1]) {
+					isFreePlace = false;
+				}
+			} );
+		} while (!isFreePlace);
+
+		this._apple = [x, y];
+		this._snake.makeHungry();
+	}
+	getApplePos () {
+		return [...this._apple];
+	}
+
+	sendWinSignal () {
+		this.sendStopSignal();
+		this._gameStatus.isWinned = true;
+	}
+	sendGameOverSignal () {
+		this.sendStopSignal();
+		this._gameStatus.gameOvered = true;
+	}
+	sendStopSignal () {
+		this._gameStatus.isStopped = true;
+	}
+}
+function changeDirect () {
+
+	const nextDirect = this._lastKeydown;
+	this._lastKeydown = undefined;
+
+	nextDirect && this._snake.setDirect(nextDirect);
 }
 
+function takeAppleTemplate () {
+	const resultTemplate = new ItemTemplate();
+	resultTemplate.setName("apple");
+	resultTemplate.setId(10);
+	resultTemplate.setColor("#F00")
+	resultTemplate.setSize(1, 1);
 
-function render (stateObj) {
+	return resultTemplate;
+}
+function takeHeadTemplate () {
+	const resultTemplate = new ItemTemplate();
+	resultTemplate.setName("snake-head");
+	resultTemplate.setId(1);
+	resultTemplate.setColor("#00F")
+	resultTemplate.setSize(1, 1);
+
+	return resultTemplate;
+}
+function takeBodyPartTemplate () {
+	const resultTemplate = new ItemTemplate();
+	resultTemplate.setName("snake-body");
+	resultTemplate.setId(2);
+	resultTemplate.setColor("#0F0")
+	resultTemplate.setSize(1, 1);
+
+	return resultTemplate;
+}
+
+class ItemTemplate {
+	_name = "";
+	_id = null;
+	_color = "";
+	_size = [null, null];
+	_pos = [null, null];
+
+	_isTrash = false;
+	checkTrash () {
+		return this._isTrash;
+	}
+	makeTrash () {
+		this._isTrash = true;
+	}
+
+	get name () {
+		return this._name;
+	}
+	get id () {
+		return this._id;
+	}
+	get color () {
+		return this._color;
+	}
+	get size () {
+		return this._size;
+	}
+	get pos () {
+		return this._pos;
+	}
+
+	static _idList = [];
+	getIdList () {
+		return this._idList;
+	}
+
+	setId (num) {
+		if ( ItemTemplate._idList.includes(num) ) return false;
+		ItemTemplate._idList.push(num);
+
+		this._id = num;
+		return true;
+	}
+	getId () {
+		return this._id;
+	}
+
+	setName (str) {
+		this._name = str;
+		return true;
+	}
+	getName () {
+		return this["name"];
+	}
+
+	setColor (color_str) {
+		this._color = color_str;
+		return true;
+	}
+	getColor () {
+		return this["color"];
+	}
+
+	setSize (x_num, y_num) {
+		this._size = [x_num, y_num];
+		return true;
+	}
+	getSize () {
+		return [...this["size"]];
+	}
+
+	setPos (x_num, y_num) {
+		this._pos = [x_num, y_num];
+		return true;
+	}
+	getPos () {
+		return [...this["pos"]];;
+	}
+}
+
+/*
+function render () {
 
 	const ctx		= stateObj["context"];
-	const cellSize	= stateObj["scaleParams"].cellSize;
+	const cellSize	= this._gameMap.cellSize;
 
-	ctx.clearRect(0, 0, stateObj["scaleParams"].width, stateObj["scaleParams"].height);
+	ctx.clearRect(0, 0, this._gameMap["width"], this._gameMap["height"]);
 
 
 	const headCoef = 1;
@@ -215,12 +332,11 @@ function render (stateObj) {
 	ctx.fillRect(xHead, yHead, headSize, headSize)
 
 	ctx.fillStyle = bodyColor;
-	stateObj["snake"].bodyTraversal( bodyPart => {
+	stateObj["snake"].forEach( bodyPart => {
 		const xBodyPart = bodyPart[0] * cellSize + bodyOffset;
 		const yBodyPart = bodyPart[1] * cellSize + bodyOffset;
 		ctx.fillRect(xBodyPart, yBodyPart, bodySize, bodySize);
 
-		/*
 		ctx.strokeStyle = connectiveColor;
 		ctx.beginPath();
 
@@ -228,7 +344,6 @@ function render (stateObj) {
 		const yLine1 = yBodyPart + Math.floor(bodySize / 2);
 
 		ctx.moveTo(xLine1, yLine1);
-		*/
 	} );
 
 
@@ -239,10 +354,75 @@ function render (stateObj) {
 	ctx.fillStyle = "#F00";
 	ctx.fillRect(apple[0] * cellSize, apple[1] * cellSize, cellSize, cellSize);
 }
+*/
 
+class Directs_2d {
+	constructor() {
+	}
+
+	_directs = {
+		LEFT	: Symbol("LEFT"),
+		TOP		: Symbol("TOP"),
+		RIGHT	: Symbol("RIGHT"),
+		BOTTOM	: Symbol("BOTTOM"),
+	};
+	_codes = {
+		[ this._directs["LEFT"]		]	: [-1, 0],
+		[ this._directs["TOP"]		]	: [0, -1],
+		[ this._directs["RIGHT"]	]	: [+1, 0],
+		[ this._directs["BOTTOM"]	]	: [0, +1],
+	};
+	_antagonists = {
+		[ this._directs["LEFT"]		]	: this._directs["RIGHT"],
+		[ this._directs["TOP"]		]	: this._directs["BOTTOM"],
+		[ this._directs["RIGHT"]		]	: this._directs["LEFT"],
+		[ this._directs["BOTTOM"]	]	: this._directs["TOP"],
+	};
+
+	getDirects () {
+		return {...this._directs};
+	}
+	getDirectByDescript (text) {
+		const resultDirect = this._directs[text];
+		if ( !resultDirect ) {
+			throw new Error(`Uncorrecting direction symbol description: ${resultDirect}`);
+		}
+
+		return resultDirect;
+	}
+	hasDirect (symbol) {
+		let result_bool;
+
+		if (this._antagonists[symbol])	result_bool = true;
+		else 							result_bool = false;
+
+		return result_bool;
+	}
+	getDescript (symbol) {
+		if ( !this.hasDirect(symbol) ) throw new Error("Uncorrecting direction symbol");
+
+		return symbol.description;
+	}
+	getCode (symbol) {
+		if ( !this.hasDirect(symbol) ) throw new Error("Uncorrecting direction symbol");
+
+		return this._codes[symbol];
+	}
+	getAntagonist (symbol) {
+		if ( !this.hasDirect(symbol) ) throw new Error("Uncorrecting direction symbol");
+
+		return this._antagonists[symbol];
+	}
+
+	forEach (func) {
+		for (let direct in this._directs) {
+			func(this._directs[direct], direct, {...this._directs});
+		}
+	}
+}
 
 class SnakeBody {
-	constructor (body = undefined) {
+	constructor (body) {
 		this._body = body;
 		this._size = body ? body.length : 0;
 	}
@@ -253,144 +433,244 @@ class SnakeBody {
 	_headIndex = 0;
 	_tailIndex = -1;
 
-	_directs = {
-		LEFT	: Symbol("LEFT"),
-		TOP		: Symbol("TOP"),
-		RIGHT	: Symbol("RIGHT"),
-		BOTTOM	: Symbol("BOTTOM"),
-	};
-	_directCodes = {
-		[ this._directs["LEFT"]		]	: [-1, 0],
-		[ this._directs["TOP"]		]	: [0, -1],
-		[ this._directs["RIGHT"]	]	: [+1, 0],
-		[ this._directs["BOTTOM"]	]	: [0, +1],
-	};
-	_directAntagonists = {
-		[ this._directs["LEFT"]		]	: this._directs["RIGHT"],
-		[ this._directs["TOP"]		]	: this._directs["BOTTOM"],
-		[ this._directs["RIGHT"]	]	: this._directs["LEFT"],
-		[ this._directs["BOTTOM"]	]	: this._directs["TOP"],
-	};
-	_direct = undefined;
-	get _unallowedDirect () {
-		return this._directAntagonists[this._direct];
-	}
-
-	eat () {
-		this._growthEnergy++;
-		this._isEated = true;
-	}
-	setHungry() {
-		this._isEated = false;
-	}
-	isEated () {
-		return this._isEated;
-	}
-
-	move (walls, appleDirect) {
-		if (this._isDead) return;
-
-		for (let wall of walls) {
-			if (wall === this._direct) {
-				this.dead();
-				return;
-			}
-		}
-
-		if (appleDirect === this._direct) {
-			this.eat();
-		}
-
-		let nextPos = this.getNextHeadCoords();
-		this.bodyTraversal( bodyPart => {
-			[
-				[bodyPart[0], bodyPart[1]],
-				[nextPos[0], nextPos[1]]
-			] = [
-				nextPos.slice(),
-				bodyPart.slice()
-			];
-		} );
-
-		if (this._growthEnergy) {
-			this.setTail(nextPos);
-			this._growthEnergy--;
-		}
-	}
-
-	dead () {
-		this._isDead = true;
-	}
-	isDead () {
-		return this._isDead;
-	}
-
 	getSize() {
 		return this._size;
 	}
 
-	setDirect (symbol) {
-		if ( !this._directCodes[symbol] ) {
-			const errMsg = "Uncorrecting direction " + typeof symbol + " as Symbol type: "
+	_directObj = undefined;
+	_curDirect = undefined;
+	get _unallowedDirect () {
+		return this._directObj.getAntagonist(this._curDirect);
+	}
+	
+	getAvailableSidesByDirect = function func (symbol) {
+
+		if (!func.cache)		func.cache = {}; 
+		if (func.cache[symbol]) return func.cache[symbol];
+
+		const resultArr = [];
+		const antagonist = this._directObj.getAntagonist(symbol);
+
+		this._directObj.forEach( direct => {
+			(symbol !== antagonist) && resultArr.push(direct);
+		} );
+
+		func.cache[symbol] = resultArr;
+		return [...resultArr];
+	}
+
+	setDirectObj(obj) {
+		this._directObj = obj;
+	}
+	setDirect = function func (symbol) {
+		if ( !this._directObj.hasDirect(symbol) ) {
+			const errMsg = "Uncorrecting direction "
+				+ typeof symbol
+				+ " entered like Symbol type: "
 				+ (typeof symbol === "symbol" ? symbol.description : symbol);
 			throw new Error(errMsg);
 		};
 
+		if ( this.checkDeath() ) return;
+		if ( func.isNotFirstRun && symbol === this._unallowedDirect ) return;
+
+		if (!func.isNotFirstRun) func.isNotFirstRun = true;
+
+		this._curDirect = symbol;
+	}
+	getCurDirect () {
+		return this._curDirect;
+	}
+	getCurDirectDescript () {
+		return this._curDirect.description;
+	}
+
+	_isHungry = true;
+	eat (foodSymbol) {
+		if ( foodSymbol !== getKnownItems()["FOOD"] ) return false;
+
+		this._growthEnergy++;
+		this._isHungry = false;
+		return true;
+	}
+	makeHungry () {
+		this._isHungry = true;
+	}
+	checkHungry () {
+		return this._isHungry;
+	}
+	tryToGrowUp (bodyPart_arr) {
+		if ( this.checkDeath() ) return;
+
+		if (this._growthEnergy) {
+			this.increaseTail(bodyPart_arr);
+			this._growthEnergy--;
+		}
+	}
+
+	_isDead = false;
+	die () {
+		this._isDead = true;
+	}
+	checkDeath () {
+		return this._isDead;
+	}
+
+	move () {
 		if (this._isDead) return;
-		if ( symbol === this._unallowedDirect ) return;
 
-		this._direct = symbol;
+		/*
+		for (let wall of walls) {
+			if (wall === this._curDirect) {
+				this.dead();
+				return;
+			}
+		}
+		*/
+
+		/*
+		if (appleDirect === this._curDirect) {
+			this.eat();
+		}
+		*/
+
+		const nextPosItem = this._visionZone[this.curDirect];
+		const foodSymbol = this.getKnownItems()["FOOD"];
+		const wallSymbol = this.getKnownItems()["WALL"];
+		
+		switch (nextPosItem) {
+			case foodSymbol:
+				this.eat(foodSymbol);
+				break;
+			case wallSymbol:
+				this.die();
+				break;
+		};
+
+		const bodyPartNextPos = this.getNextHeadPos();
+		this.forEach( bodyPart => {
+			//console.log(bodyPartNextPos);
+			[
+				[bodyPartNextPos[0], bodyPartNextPos[1]],
+				[bodyPart[0], bodyPart[1]],
+			] = [
+				[bodyPart[0], bodyPart[1]],
+				[bodyPartNextPos[0], bodyPartNextPos[1]],
+			];
+		} );
+
+		this.tryToGrowUp(bodyPartNextPos);
 	}
-	getDirect () {
-		return this._direct;
-	}
-	getDirectDescript () {
-		return this._direct.description;
-	}
-	getDirectByDescript (text) {
-		const resultDirect = this._directs[text];
-		if ( !resultDirect ) throw new Error("Uncorrecting direction symbol description");
 
-		return resultDirect;
-	}
-	getDescriptByDirect (symbol) {
-		if ( !this._directCodes[symbol] ) throw new Error("Uncorrecting direction symbol");
+	detectWalls () {
+		let walls = [];
 
-		return typeof symbol === "symbol" ? symbol.description: undefined;
-	}
+		const TOP 		= stateObj["snake"].getDirectByDescript("TOP");
+		const LEFT 		= stateObj["snake"].getDirectByDescript("LEFT");
+		const BOTTOM 	= stateObj["snake"].getDirectByDescript("BOTTOM");
+		const RIGHT		= stateObj["snake"].getDirectByDescript("RIGHT");
 
-	getDirectCodeByDirect (symbol) {
-		if ( !this._directCodes[symbol] ) throw new Error("Uncorrecting direction symbol");
+		const head = stateObj["snake"].getHead();
+		const visibleZone = stateObj["snake"].getVisibleZone();
 
-		return this._directCodes[symbol];
-	}
 
-	getVisibleZone() {
-		const zone = new Array(3);
-
-		let sideIndex = 0;
-		for (let direct of Object.values(this._directs)) {
-			if (direct === this._unallowedDirect) continue;
-
-			zone[sideIndex] = direct;
-			sideIndex++;
+		if 	(head[0] === 0) {
+			walls.push(LEFT);
+		}
+		if 	(head[1] === 0) {
+			walls.push(TOP);
+		}
+		if 	(head[0] === this._gameMap["width"] -1) {
+			walls.push(RIGHT);
+		}
+		if 	(head[1] === this._gameMap["height"] -1) {
+			walls.push(BOTTOM);
 		}
 
-		return zone;
+		for (let side of visibleZone) {
+
+			const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
+			const sideCoords = [
+				head[0] + sideCoef[0],
+				head[1] + sideCoef[1],
+			];
+
+			stateObj["snake"].forEach( bodyPart => {
+
+				if (bodyPart[0] === sideCoords[0] && bodyPart[1] === sideCoords[1]) {
+					walls.push(side);
+				}
+			} );
+		}
+
+		return walls;
+	}
+	detectApple () {
+		let appleDirect;
+
+		const head = stateObj["snake"].getHead();
+		const apple = stateObj["apple"];
+		const visibleZone = stateObj["snake"].getVisibleZone();
+
+		for (let side of visibleZone) {
+
+			const sideCoef = stateObj["snake"].getDirectCodeByDirect(side);
+			const sideCoords = [
+				head[0] + sideCoef[0],
+				head[1] + sideCoef[1],
+			];
+
+
+			if (apple[0] === sideCoords[0] && apple[1] === sideCoords[1]) {
+				appleDirect = side;
+			}
+		}
+
+		return appleDirect;
 	}
 
-	getHead () {
-		return this.getBodyPart(this._headIndex);
+	getKnownItems = function func () {
+		if (func.insideContainer) return {...func.insideContainer};
+
+		func.insideContainer = {
+			"FOOD": Symbol("FOOD"),
+			"WALL": Symbol("WALL"),
+		};
+		return {...func.insideContainer};
+	};
+
+	get _visionZone () {
+		const sideArr = this.getAvailableSidesByDirect(this._curDirect);
+		const result = {
+			[ sideArr[0] ]: undefined,
+			[ sideArr[1] ]: undefined,
+			[ sideArr[2] ]: undefined,
+		};
+
+		return result;
 	}
-	getNextHeadCoords () {
+	setItemsInSight (arr) {
+		let i = 0;
+		for ( let key in Object.keys(this._visionZone) ) {
+			this._visionZone[key] = arr[i++];
+		}
+	}
+	getVisionSides () {
+		return [ ...Object.keys(this._visionZone) ];
+	}
+
+	getNextHeadPos () {
 		const curHead = this.getHead();
-		const curDirect = this._directCodes[this._direct];
+		const curDirect = this._directObj.getCode(this._curDirect);
 
 		return [curHead[0] + curDirect[0], curHead[1] + curDirect[1]];
 	}
+	getHead () {
+		return this.getBodyPart(this._headIndex);
+	}
 
-	setTail (bodyPart) {
-		if (this._isDeaded) return;
+	increaseTail (bodyPart) {
+		if (this._isDead) return;
 
 		this.bodyPush(bodyPart);
 		this._size++;
@@ -406,7 +686,7 @@ class SnakeBody {
 	bodyPush (bodyPart) {
 		this._body.push(bodyPart);
 	}
-	bodyTraversal (func) {
+	forEach (func) {
 		for (let bodyPart of this._body) {
 			func(bodyPart);
 		}
@@ -418,7 +698,7 @@ class BodyPart {
 	// symbol is a direction as Symbol type
 	constructor(coords, direct) {
 		this._coords = coords;
-		this._direct = direct;
+		this._curDirect = direct;
 	}
 
 	// coords = [x, y]

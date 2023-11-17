@@ -38,7 +38,7 @@ function loadGameBlock (DomBlock) {
 			return this._renderControl;
 		},
 		get gameObj () {
-			if (!this._gameObj) this._gameObj = new gameBlock_Snake(this.gameMap);
+			if (!this._gameObj) this._gameObj = new gameBlock_Snake(this.gameStatus);
 			return this._gameObj;
 		},
 
@@ -65,8 +65,8 @@ function loadGameBlock (DomBlock) {
 
 					setItem (item_obj) {
 						++this._maxMapId
-						itemObj["localId"] = this._maxMapId;
-						return this._items[this._maxMapId] = itemObj;
+						item_obj["mapId"] = this._maxMapId;
+						return this._items[this._maxMapId] = item_obj;
 					},
 					getItem (mapId_num) {
 						return this._items[localId_num];
@@ -77,13 +77,16 @@ function loadGameBlock (DomBlock) {
 						if ( !(mapId_num === this._maxMapId) ) return;
 						this._maxMapId = this._items["keys"].at(-1);
 					},
+					clear () {
+						this._items = {};
+					},
 					forEach (func) {
 						for (let item in this._items) {
 							func(item);
 						}
 					},
 
-					_maxMapId: null,
+					_maxMapId: 0,
 					_items: {	
 						/*
 						1: {
@@ -140,8 +143,10 @@ function loadGameBlock (DomBlock) {
 		renderConfig: {
 			width: scaleParams["width"],
 			height: scaleParams["height"],
+
+			gameContainer: this,
 			get cellSize () {
-				return this["width"] / gameMap["width"];
+				return this["width"] / gameContainer["gameMap"]["width"];
 			},
 		},
 
@@ -195,7 +200,7 @@ function loadGameBlock (DomBlock) {
 
 	gameContainer.buildGameBlockSize();
 
-	gameContainer.gameObj.init();
+	gameContainer["gameObj"].init(gameContainer.gameMap);
 	gameContainer.startRender();
 	document.addEventListener( "keyup", _ => gameContainer.start(), {once: true} );
 }
