@@ -11,6 +11,7 @@ export default class SnakeGame {
 	buildGameMap () {
 		const main = this._gameMap.layers["main"];
 		main.clear();
+		console.log("check");
 
 		let isHeadBuilded = false;
 		this._snake.forEach( bodyPart => {
@@ -406,7 +407,7 @@ class Directs_2d {
 		return this._antagonists[symbol];
 	}
 
-	forEach (func) {
+	forEachSafe (func) {
 		for (let direct in this._directs) {
 			func(this._directs[direct], direct, {...this._directs});
 		}

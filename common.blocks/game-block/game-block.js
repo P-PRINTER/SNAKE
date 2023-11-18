@@ -78,16 +78,23 @@ function loadGameBlock (DomBlock) {
 						this._maxMapId = this._items["keys"].at(-1);
 					},
 					clear () {
+						console.log("clear start");
+						console.log("11");
 						console.log(this._items);
-						//this._items = {};
-						/*for (let mapId in this._items) {
+						console.log("12");
+						/*this._items = {}; */
+						for (let mapId in this._items) {
+							console.log(this._items[mapId]);
 							delete this._items[mapId];
-						}*/
+						}
+						console.log("21");
 						console.log(this._items);
+						console.log("22");
+						console.log("clear finish");
 					},
 					forEach (func) {
 						for (let item in this._items) {
-							func(item);
+							func(this._items[item], item, this._items);
 						}
 					},
 
