@@ -4,6 +4,7 @@ export default function renderFrame (context, graphicMap, renderConfig) {
 
 	if (!layer["needUpdate"]) return;
 
+	clear(context, renderConfig);
 	draw(context, graphicMap, renderConfig, mod);
 }
 
@@ -23,4 +24,8 @@ function draw (context, graphicMap, renderConfig, mod) {
 		context.fillStyle = item["color"];
 		context.fillRect(posX, posY, itemWidth, itemHeight);
 	}
+}
+
+function clear (context, renderConfig) {
+	context.clearRect(0, 0, renderConfig["width"], renderConfig["height"]);
 }

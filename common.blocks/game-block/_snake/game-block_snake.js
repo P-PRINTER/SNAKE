@@ -11,7 +11,6 @@ export default class SnakeGame {
 	buildGameMap () {
 		const main = this._gameMap.layers["main"];
 		main.clear();
-		console.log("check");
 
 		let isHeadBuilded = false;
 		this._snake.forEach( bodyPart => {
@@ -444,7 +443,7 @@ class SnakeBody {
 		const resultArr = [];
 		const antagonist = this._directObj.getAntagonist(symbol);
 
-		this._directObj.forEach( direct => {
+		this._directObj.forEachSafe( direct => {
 			(symbol !== antagonist) && resultArr.push(direct);
 		} );
 
