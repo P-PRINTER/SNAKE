@@ -196,7 +196,7 @@ export default class SnakeGame {
 	}
 	sendGameOverSignal () {
 		this.sendStopSignal();
-		this._gameStatus.gameOvered = true;
+		this._gameStatus.isGameOvered = true;
 	}
 	sendStopSignal () {
 		this._gameStatus.isStopped = true;

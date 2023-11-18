@@ -44,14 +44,9 @@ function loadGameBlock (DomBlock) {
 
 		repeatTime: refreshTime,
 
-		isRenderLoaded: false,
-		isBuilded: false,
-
 		buildGameBlockSize () {
 			this.gameDomBlock.style.width 	= scaleParams["widthInCells"] * scaleParams["cellSize"] + "px";
 			this.gameDomBlock.style.height 	= scaleParams["heightInCells"] * scaleParams["cellSize"] + "px";
-
-			this.isBuilded = true;
 		},
 		
 		gameMap: {
@@ -170,11 +165,11 @@ function loadGameBlock (DomBlock) {
 		_timerId: undefined,
 
 		start () {
-			if (this.isRunning) return;
-			this.isRunning = true;
+			if (this.gameStatus.isRunning) return;
+			this.gameStatus.isRunning = true;
 
 			this._timerId = setInterval( _ => {
-				if (!this.isRunning) return;
+				if (!this.gameStatus.isRunning) return;
 
 				this.gameObj.doStep();
 
@@ -187,14 +182,14 @@ function loadGameBlock (DomBlock) {
 			}, this.repeatTime );
 		},
 		stop () {
-			this.isRunning = false;
+			this.gameStatus.isRunning = false;
 			clearInterval(this._timerId);
 		},
 		unpause () {
-			this.isRunning = true;
+			this.gameStatus.isRunning = true;
 		},
 		pause () {
-			this.isRunning = false;
+			this.gameStatus.isRunning = false;
 		},
 	};
 
@@ -215,12 +210,13 @@ function reloadGame () {
 
 	const enterHandler = evt => {
 		if ( evt.code !== "Enter" ) return;
+		document.removeEventListener("keydown", enterHandler);
 
 		this.gameDomBlock.classList.add 	("game-block_outline-color_black");
 		this.gameDomBlock.classList.remove ("game-block_outline-color_blue");
 
 		this.buildGameBlockSize();
-		document.removeEventListener("keydown", enterHandler);
+		this["gameObj"].init(this.gameMap);
 		document.addEventListener( "keydown", _ => this.start(), {once: true} );
 	};
 	document.addEventListener("keydown", enterHandler);
