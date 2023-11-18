@@ -256,15 +256,7 @@ class ItemTemplate {
 		return this._pos;
 	}
 
-	static _idList = [];
-	getIdList () {
-		return this._idList;
-	}
-
 	setId (num) {
-		if ( ItemTemplate._idList.includes(num) ) return false;
-		ItemTemplate._idList.push(num);
-
 		this._id = num;
 		return true;
 	}
