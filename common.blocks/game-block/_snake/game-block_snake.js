@@ -112,7 +112,10 @@ export default class SnakeGame {
 	doStep () {
 		changeDirect.call(this);
 
-		this._snake.checkHungry() && this.createApple();
+		if ( !this._snake.checkHungry() ) {
+			this._snake.makeHungry();
+			this.createApple();
+		}
 
 		const headPos = this._snake.getHead();
 		const visionSides = this._snake.getVisionSides();
