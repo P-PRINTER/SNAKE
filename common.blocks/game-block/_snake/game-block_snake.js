@@ -1,5 +1,5 @@
 export default class SnakeGame {
-	construnctor (gameStatus_obj) {
+	constructor (gameStatus_obj) {
 		this._gameStatus = gameStatus_obj;
 	}
 
@@ -30,31 +30,32 @@ export default class SnakeGame {
 			main.setItem(mapPart);
 		} );
 
-		const apple = takeAppleTemplate();
-		apple.setPos( ...this.getApplePos() );
-
-		main.setItem(apple);
+		if (this._apple) {
+			const apple = takeAppleTemplate();
+			apple.setPos( ...this.getApplePos() );
+			main.setItem(apple);
+		}
 	}
 	detectWallOnPos (pos_arr) {
 		let result_bool = false;
 
-		if 	(pos_arr[0] === 0) {
+		if 	(pos_arr[0] === -1) {
 			result_bool = true;
 		}
-		else if (pos_arr[0] === this._gameMap["width"] -1) {
+		else if (pos_arr[0] === this._gameMap["width"]) {
 			result_bool = true;
 		}
-		if 	(pos_arr[1] === 0) {
+		if 	(pos_arr[1] === -1) {
 			result_bool = true;
 		}
-		else if (pos_arr[1] === this._gameMap["height"] -1) {
+		else if (pos_arr[1] === this._gameMap["height"]) {
 			result_bool = true;
 		}
 
 		return result_bool;
 	}
 	detectAppleOnPos (pos_arr) {
-		result_bool = false;
+		let result_bool = false;
 
 		if (pos_arr[0] === this._apple[0] && pos_arr[1] === this._apple[1]) {
 			result_bool = true;
@@ -67,6 +68,7 @@ export default class SnakeGame {
 		this._gameMap = gameMap_obj;
 
 		const size = 4;
+		const maxSize = this._gameMap["width"] * this._gameMap["height"];
 		const bodyArr = new Array(size);
 
 		// needing change from array to linked list
@@ -80,6 +82,7 @@ export default class SnakeGame {
 		const directValue = this._directObj.getDirectByDescript("LEFT");
 
 		this._snake = new SnakeBody(bodyArr);
+		this._snake.setMaxSize(maxSize);
 		this._snake.setDirectObj(this._directObj);
 		this._snake.setDirect(directValue);
 
@@ -123,28 +126,33 @@ export default class SnakeGame {
 
 		const availableItems = [];
 		for (let side of visionSides) {
+			let resultItem;
+
 			const pos = new Array(2);
 			pos[0] = headPos[0] + this._directObj.getCode(side)[0];
 			pos[1] = headPos[1] + this._directObj.getCode(side)[1];
 
 			if ( this.detectAppleOnPos(pos) ) {
-				availableItems.push( itemList["FOOD"] );
+				resultItem = itemList["FOOD"];
 			} else if ( this.detectWallOnPos(pos) ) {
-				availableItems.push( itemList["WALL"] );
+				resultItem = itemList["WALL"];
 			}
-		}
 
+			availableItems.push(resultItem);
+		}
+		
 		this._snake.setItemsInSight(availableItems);
-		this._snake.move();
+		const MOVE_CODE = this._snake.move();
 
-
-		if ( this._snake.getSize() ===
-			this._gameMap["width"] * this._gameMap["height"]
-		) {
-			this.sendWinSignal();
-		}
-		if ( this._snake.checkDeath() ) {
-			this.sendGameOverSignal();
+		switch (MOVE_CODE) {
+			case "max-growth":
+				this.sendWinSignal();
+				break;
+			case "die":
+				this.sendGameOverSignal();
+				break;
+			case "eat":
+				this.rmApple();
 		}
 
 		this.buildGameMap();
@@ -174,7 +182,9 @@ export default class SnakeGame {
 		} while (!isFreePlace);
 
 		this._apple = [x, y];
-		this._snake.makeHungry();
+	}
+	rmApple () {
+		delete this._apple;
 	}
 	getApplePos () {
 		return [...this._apple];
@@ -428,8 +438,14 @@ class SnakeBody {
 	_headIndex = 0;
 	_tailIndex = -1;
 
-	getSize() {
+	getSize () {
 		return this._size;
+	}
+	setMaxSize (num) {
+		this._maxSize = num;
+	}
+	getMaxSize () {
+		return this._maxSize;
 	}
 
 	_directObj = undefined;
@@ -447,7 +463,7 @@ class SnakeBody {
 		const antagonist = this._directObj.getAntagonist(symbol);
 
 		this._directObj.forEachSafe( direct => {
-			(symbol !== antagonist) && resultArr.push(direct);
+			(direct !== antagonist) && resultArr.push(direct);
 		} );
 
 		func.cache[symbol] = resultArr;
@@ -482,7 +498,7 @@ class SnakeBody {
 
 	_isHungry = true;
 	eat (foodSymbol) {
-		if ( foodSymbol !== getKnownItems()["FOOD"] ) return false;
+		if ( foodSymbol !== this.getKnownItems()["FOOD"] ) return false;
 
 		this._growthEnergy++;
 		this._isHungry = false;
@@ -512,49 +528,52 @@ class SnakeBody {
 	}
 
 	move () {
-		if (this._isDead) return;
+		if ( this.checkDeath() ) return;
 
-		/*
-		for (let wall of walls) {
-			if (wall === this._curDirect) {
-				this.dead();
-				return;
-			}
-		}
-		*/
+		let resultCode = "continue";
 
-		/*
-		if (appleDirect === this._curDirect) {
-			this.eat();
-		}
-		*/
-
-		const nextPosItem = this._visionZone[this.curDirect];
+		const nextPosItem = this._visionZone[this._curDirect];
 		const foodSymbol = this.getKnownItems()["FOOD"];
 		const wallSymbol = this.getKnownItems()["WALL"];
-		
+
 		switch (nextPosItem) {
 			case foodSymbol:
 				this.eat(foodSymbol);
+
+				let newTail = doMove.call(this);
+				this.tryToGrowUp(newTail);
+
+				resultCode = "eat";
 				break;
 			case wallSymbol:
 				this.die();
+				resultCode = "die";
+				break;
+			case undefined:
+				doMove.call(this);
+				resultCode = "continue";
 				break;
 		};
 
-		const bodyPartNextPos = this.getNextHeadPos();
-		this.forEach( bodyPart => {
-			//console.log(bodyPartNextPos);
-			[
-				[bodyPartNextPos[0], bodyPartNextPos[1]],
-				[bodyPart[0], bodyPart[1]],
-			] = [
-				[bodyPart[0], bodyPart[1]],
-				[bodyPartNextPos[0], bodyPartNextPos[1]],
-			];
-		} );
+		if ( this.getSize() === this.getMaxSize() ) resultCode = "max-growth";
 
-		this.tryToGrowUp(bodyPartNextPos);
+		return resultCode;
+
+
+		function doMove () {
+			const bodyPartNextPos = this.getNextHeadPos();
+			this.forEach( bodyPart => {
+				[
+					[bodyPartNextPos[0], bodyPartNextPos[1]],
+					[bodyPart[0], bodyPart[1]],
+				] = [
+					[bodyPart[0], bodyPart[1]],
+					[bodyPartNextPos[0], bodyPartNextPos[1]],
+				];
+			} );
+
+			return bodyPartNextPos;
+		}
 	}
 
 	detectWalls () {
@@ -637,21 +656,22 @@ class SnakeBody {
 	get _visionZone () {
 		const sideArr = this.getAvailableSidesByDirect(this._curDirect);
 		const result = {
-			[ sideArr[0] ]: undefined,
-			[ sideArr[1] ]: undefined,
-			[ sideArr[2] ]: undefined,
+			[ sideArr[0] ]: this._availableItems[0],
+			[ sideArr[1] ]: this._availableItems[1],
+			[ sideArr[2] ]: this._availableItems[2],
 		};
 
 		return result;
 	}
+	_availableItems = new Array(3);
 	setItemsInSight (arr) {
 		let i = 0;
-		for ( let key in Object.keys(this._visionZone) ) {
-			this._visionZone[key] = arr[i++];
+		for ( let key in Object.getOwnPropertySymbols(this._visionZone) ) {
+			this._availableItems[key] = arr[i++];
 		}
 	}
 	getVisionSides () {
-		return [ ...Object.keys(this._visionZone) ];
+		return [ ...Object.getOwnPropertySymbols(this._visionZone) ];
 	}
 
 	getNextHeadPos () {
