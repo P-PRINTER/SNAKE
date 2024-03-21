@@ -1,4 +1,4 @@
-class Controller {
+export class Controller {
 
     static _up      = null;
     static _right   = null;

@@ -1,7 +1,7 @@
 import {Area} from "./area.js";
 import {Game} from "./game.js";
 
-class Actor {
+export class Actor {
 
     static FORWARD  = Symbol();
     static LEFT     = Symbol();
