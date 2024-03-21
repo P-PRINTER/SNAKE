@@ -1,9 +1,11 @@
 export class Controller {
 
-    static _up      = null;
-    static _right   = null;
-    static _down    = null;
-    static _left    = null;
+    static UP       = Symbol();
+    static RIGHT    = Symbol();
+    static DOWN     = Symbol();
+    static LEFT     = Symbol();
+
+    static _code = Controller.LEFT;
 
     constructor () {
         throw Error('"new Controller()" is an invalid construction, Controller is a static class.');
@@ -17,47 +19,25 @@ export class Controller {
             switch (evt.code) {
                 case "KeyW":
                 case "ArrowUp":
-                    this.up();
+                    this._code = this.UP;
                     break;
                 case "KeyD":
                 case "ArrowRight":
-                    this.right();
+                    this._code = this.RIGHT;
                     break;
                 case "KeyS":
                 case "ArrowDown":
-                    this.down();
+                    this._code = this.DOWN;
                     break;
                 case "KeyA":
                 case "ArrowLeft":
-                    this.left();
+                    this._code = this.LEFT;
                     break;
             }
         });
     }
 
-    static up () {
-        if (this._up !== null)      this._up();
-    }
-    static right () {
-        if (this._right !== null)   this._right();
-    }
-    static down () {
-        if (this._down !== null)    this._down();
-    }
-    static left () {
-        if (this._left !== null)    this._left();
-    }
-
-    static setUpAction (action) {
-        this._up    = action;
-    }
-    static setRightAction (action) {
-        this._right = action;
-    }
-    static setDownAction (action) {
-        this._down  = action;
-    }
-    static setLeftAction (action) {
-        this._left  = action;
+    static getCode () {
+        return this._code;
     }
 }
