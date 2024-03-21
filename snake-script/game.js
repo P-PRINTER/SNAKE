@@ -70,6 +70,10 @@ export class Game {
         }
     }
 
+    static getActor () {
+        return this._actor;
+    }
+
     static useItem (row, col) {
         const block = this._area.getBlock(row, col);
 
