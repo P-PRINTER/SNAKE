@@ -40,7 +40,7 @@ export class Game {
 
         while (this._is_running) {
             this.updateSubs();
-            utils.delay(50);
+            await utils.delay(50);
             if (this._is_paused) continue;
             this.iteration();
         }
