@@ -20,6 +20,9 @@ class Snake {
     clearActor () {
         this._actor = null;
     }
+    getActor () {
+        return this._actor;
+    }
 
     // redefine in children
     update (evt) {}
