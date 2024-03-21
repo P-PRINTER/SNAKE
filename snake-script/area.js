@@ -10,6 +10,7 @@ export class Area {
 
     _width  = null;
     _height = null;
+    get size () {return this._width * this._height;}
 
     _area           = [];
     _free_blocks    = new Map();

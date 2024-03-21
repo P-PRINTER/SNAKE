@@ -8,6 +8,9 @@ export class Actor {
     static BOTTOM   = Symbol();
     static RIGHT    = Symbol();
 
+    static EAT      = Symbol();
+    static DEAD     = Symbol();
+
     static validateDirection (direct) {
         if (
             direct != this.FORWARD  &&
@@ -26,10 +29,11 @@ export class Actor {
     
     get length () {return this._body.length;}
 
-    constructor (game_obj, direct = Actor.LEFT) {
+    constructor (game_obj, direct = Actor.LEFT, body = null) {
         if ( !(game_obj instanceof Game) ) throw TypeError('"game_obj" arg of the "new Actor()" init must have Game type.');
         this._game          = game_obj;
         this._is_alive      = true;
+        this._body          = body === null ? [[2, 0], [1, 0], [0, 0]] : body;
         
         try {
             this._direct    = direct;
@@ -46,19 +50,22 @@ export class Actor {
     dead () {
         this._is_alive  = false;
     }
+    getAliveness () {
+        return this._is_alive;
+    }
 
     move () {
         if (!this._is_alive) return;
 
         let grow            = false;
         const front_block   = this.see();
+        const action        = this._game.use(front_block);
 
-        switch (front_block) {
-            case Area.APPLE:
+        switch (action) {
+            case Actor.EAT:
                 grow = true;
                 break;
-            case Area.WALL:
-            case Area.SNAKE:
+            case Actor.DEAD:
                 this.dead();
                 return;
         }
@@ -88,7 +95,7 @@ export class Actor {
     }
 
     see () {
-        return this._game.getBlockInFrontOfHead();
+        return this._game.getBlockInFrontOfHead(this);
     }
 
     setDirection (direct) {
