@@ -1,7 +1,8 @@
-class Area {
+export class Area {
 
     static SNAKE    = Symbol();
     static APPLE    = Symbol();
+    static WALL     = Symbol();
 
     static validateItem (item_id) {
         if (item_id != this.SNAKE && item_id != this.APPLE) throw SyntaxError("invalid item ID");
@@ -67,6 +68,19 @@ class Area {
         this._area[row][col] = null;
 
         return true;
+    }
+    getBlock (row, col) {
+        try {
+            this._validatePos(row, col, "Area.getBlock()");
+            return this._area[row, col];
+        } catch (error) {
+            switch (error.name) {
+                case "RangeError":
+                    return Area.WALL;
+                default:
+                    throw error;
+            }
+        }
     }
 
     busyBlock (row, col, needs_validation = true) {
