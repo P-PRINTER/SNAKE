@@ -140,6 +140,11 @@ export class Game {
     static subscribe (obj) {
         this._subs.push(obj);
     }
+    static describe (obj) {
+        if ( !this._subs.has(obj) ) return false;
+        this._subs.clear(obj);
+        return true;
+    }
     static updateSubs () {
         for (let sub of this._subs.values()) {
             for (let evt of this._evt_pending) {
