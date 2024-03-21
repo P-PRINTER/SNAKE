@@ -6,12 +6,14 @@ class Snake {
 
     _actor = null;
 
-    constructor (actor, game) {
+    setActor (actor) {
         if ( !(actor instanceof Actor) ) throw TypeError('"actor" arg of the Snake-obj init must have Actor type.');
 
         this._actor = actor;
     }
-
+    getActor () {
+        return this._actor;
+    }
     replaceActor (actor) {
         if ( !(actor instanceof Actor) ) throw TypeError('"actor" arg of the Snake.replaceActor() init must have Actor type.');
 
@@ -19,9 +21,6 @@ class Snake {
     }
     clearActor () {
         this._actor = null;
-    }
-    getActor () {
-        return this._actor;
     }
 
     // redefine in children
